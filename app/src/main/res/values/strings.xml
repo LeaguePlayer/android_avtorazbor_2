@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AutoCrash Assistant</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_login">LoginActivity</string>
+
+    <!--Login Activity-->
+    <string name="login_title">Авторизация</string>
+    <string name="login_submit_button">Войти</string>
+    <string name="login_name_field">Логин</string>
+    <string name="login_pass_field">Пароль</string>
+    <string name="login_name_empty">Не заполнено поле Логин.</string>
+    <string name="login_pass_empty">Не заполнено поле Пароль.</string>
+
+    <!--Main Activity-->
+    <string name="empty_item">Не выбрано</string>
+    <string name="hello_message">Вы авторизованны под именем:</string>
+    <!--<string name="hello_message2">Выберите дальнейшее действие в меню.</string>-->
+
+    <!--Menu Actions-->
+    <string name="action_add_part">Добавить деталь</string>
+    <string name="action_update_data">Обновить данные</string>
+
+    <!--for user actions-->
+    <string name="confirm_text">Ok</string>
+    <string name="error_title">Ошибка</string>
+
+    <!--error connections-->
+    <string name="connection_error_title">Ошибка подключения к сети.</string>
+    <string name="connection_error_text">Невозможно подключиться к сети :(</string>
+
+    <!--progress text-->
+    <string name="wait_title">Подождите</string>
+    <string name="send_message">Отправляем данные</string>
+    <string name="load_message">Получаем данные</string>
+    <string name="success_message">Готово</string>
+    <string name="reserve_message">Резервируем детали</string>
+
+    <!--tab actions-->
+    <string name="tab1">Резерв</string>
+    <string name="tab2">Не законченные</string>
+
+    <!--default reserve field values-->
+    <string name="part_name_default">Резервированная запчасть</string>
+    <string name="plus10">+10</string>
+    <string name="plus25">+25</string>
+    <string name="plus50">+50</string>
+    <string name="plus_other">Другое</string>
+    <string name="reserve_choice_text">Количество резервируемых деталей</string>
+</resources>
