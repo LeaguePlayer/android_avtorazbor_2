@@ -1,12 +1,9 @@
 package ru.amobilestudio.autorazborassistant.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
-import java.util.ArrayList;
-
-import ru.amobilestudio.autorazborassistant.app.R;
 
 /**
  * Created by vetal on 09.06.14.
@@ -21,7 +18,18 @@ public class SelectsDataDb extends DbSQLiteHelper{
         _context = context;
     }
 
-    public ArrayList<Item> getAll(String tableName, boolean withEmpty){
+    public Cursor fetchAll(String tableName){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.rawQuery("SELECT * FROM " + tableName, null);
+
+        if(c != null)
+            c.moveToFirst();
+
+        return c;
+    }
+
+    /*public ArrayList<Item> getAll(String tableName, boolean withEmpty){
         ArrayList<Item> items = new ArrayList<Item>();
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -40,35 +48,20 @@ public class SelectsDataDb extends DbSQLiteHelper{
             }
         }
         return items;
-    }
+    }*/
 
-    public String getValueById(int id, String tableName){
-        SQLiteDatabase db = this.getReadableDatabase();
+    public void addItem(String tableName, ContentValues cv){
+        SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor c = db.query(tableName, new String[]{COLUMN_NAME_VALUE}, COLUMN_ID_VALUE + "=?",
-                new String[]{id + ""}, null, null, null, null);
+        String id = cv.getAsString(COLUMN_ID_VALUE);
 
-        String result = "";
+        Cursor c = db.query(tableName, new String[] {COLUMN_NAME_VALUE}, COLUMN_ID_VALUE + "=?",
+                new String[] { id }, null, null, null, null);
 
-        if(id == 0) return result;
-
-        if(c.moveToFirst())
-            result = c.getString(c.getColumnIndex(COLUMN_NAME_VALUE));
-
-        return result;
-    }
-
-    public int getIdByValue(String name, String tableName){
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor c = db.query(tableName, new String[] {COLUMN_ID_VALUE}, COLUMN_NAME_VALUE + "=?",
-                new String[] { name}, null, null, null, null);
-
-        int result = 0;
-        if(c.moveToFirst())
-            result = c.getInt(c.getColumnIndex(COLUMN_ID_VALUE));
-
-        return result;
+        if(c.moveToFirst() && c.getCount() > 0) //exists
+            db.update(tableName, cv, COLUMN_ID_VALUE + "=?", new String[] { id });
+        else
+            db.insert(tableName, null, cv);
     }
 
     public static final class Item{

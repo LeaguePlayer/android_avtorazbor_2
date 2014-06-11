@@ -23,7 +23,8 @@
     <string name="action_update_data">Обновить данные</string>
 
     <!--for user actions-->
-    <string name="confirm_text">Ok</string>
+    <string name="confirm_text">OK</string>
+    <string name="confirm_cancel">Отмена</string>
     <string name="error_title">Ошибка</string>
 
     <!--error connections-->
@@ -48,4 +49,30 @@
     <string name="plus50">+50</string>
     <string name="plus_other">Другое</string>
     <string name="reserve_choice_text">Количество резервируемых деталей</string>
+    <string name="reserve_title_list">Список</string>
+    <string name="reserve_set_count">Введите значение</string>
+    <string name="attention_title">Внимание!</string>
+    <string name="confirm_sure">Вы уверены, что хотите зарезервировать</string>
+
+    <!--parts fields-->
+    <string name="parts_price_sell">Стоимость (на продажу)</string>
+    <string name="parts_price_buy">Стоимость (покупка)</string>
+    <string name="parts_comment">Комментарий</string>
+    <string name="parts_category_id">Категория</string>
+    <string name="parts_car_model_id">Модель автомобиля</string>
+    <string name="parts_location_id">Склад</string>
+    <string name="parts_supplier_id">Поставщик</string>
+    <string name="parts_bu">Б/У автомобиль</string>
+
+    <!--add part activity-->
+    <string name="article_text">Артикул детали: </string>
+    <string name="take_photo">Сделать фотографию</string>
+    <string name="require_message">Поля обязательные для заполнения.</string>
+    <string name="publish_button_text">Опубликовать</string>
+    <string name="save_button_text">Сохранить</string>
+
+    <!--validation errors-->
+    <string name="error_price_buy">Поле Стоимость(покупка) должно быть заполнено и больше нуля.</string>
+    <string name="error_price_sell">Поле Стоимость(на продажу) должно быть заполнено и больше нуля.</string>
+    <string name="error_cat_model">Поле Категория и Марка автомобиля должны быть заполнены.</string>
 </resources>

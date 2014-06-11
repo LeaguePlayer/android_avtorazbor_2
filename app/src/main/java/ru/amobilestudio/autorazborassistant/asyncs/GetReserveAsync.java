@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.JsonReader;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -38,6 +37,9 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
 
     private int _userId;
 
+    //listener
+    private OnTaskCompleted _listener;
+
     public GetReserveAsync(Context context) {
 
         _context = context;
@@ -50,7 +52,24 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
         _progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
         _userId = UserInfoHelper.getUserId(context);
-        Log.d(ActivityHelper.TAG, "user id = " + _userId);
+
+        _listener = null;
+    }
+
+    public GetReserveAsync(Context context, OnTaskCompleted onTaskCompleted) {
+
+        _context = context;
+        _errors = new ArrayList<String>();
+
+        _progress = new ProgressDialog(context);
+        _progress.setTitle(context.getString(R.string.wait_title));
+        _progress.setMessage(context.getString(R.string.reserve_message));
+        _progress.setCancelable(true);
+        _progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+
+        _userId = UserInfoHelper.getUserId(context);
+
+        _listener = onTaskCompleted;
     }
 
     @Override
@@ -93,7 +112,7 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
                                 String dataName = reader.nextName();
                                 //add reserve part
                                 if(dataName.equals("id")){
-                                    partsDataDb.addReservePart(reader.nextInt());
+                                    partsDataDb.addReservePart(reader.nextInt(), _userId);
                                 }else
                                     reader.skipValue();
                             }
@@ -113,8 +132,6 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
             }
         }
 
-
-
         return null;
     }
 
@@ -124,8 +141,6 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
 
         _progress.dismiss();
 
-        Log.d(ActivityHelper.TAG, " -----> " + _throwEx);
-
         if(_throwEx)
             Toast.makeText(_context,
                     _context.getString(R.string.connection_error_title), Toast.LENGTH_LONG).show();
@@ -133,6 +148,7 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
         if(!_errors.isEmpty())
             AlertDialogHelper.showAlertDialog(_context,
                     _context.getString(R.string.error_title), TextUtils.join("\n", _errors), true);
-
+        if(_listener != null)
+            _listener.onTaskCompleted();
     }
 }

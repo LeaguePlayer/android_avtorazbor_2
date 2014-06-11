@@ -17,7 +17,10 @@ import android.widget.TextView;
 
 import java.lang.reflect.Field;
 
+import ru.amobilestudio.autorazborassistant.asyncs.GetSelectsDataAsync;
 import ru.amobilestudio.autorazborassistant.fragments.ReservedFragment;
+import ru.amobilestudio.autorazborassistant.fragments.SyncFragment;
+import ru.amobilestudio.autorazborassistant.helpers.ConnectionHelper;
 import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
 
 
@@ -31,6 +34,16 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //TODO: delete this lines
+        //------------------------------------------------------
+        //deleteDatabase(DbSQLiteHelper.DATABASE_NAME);
+        /*SharedPreferences settings = getSharedPreferences(DataFieldsAsync.DB_PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+
+        editor.putBoolean("isDb", false);
+        editor.commit();*/
+        //------------------------------------------------------
 
         getOverflowMenu();
 
@@ -64,7 +77,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     private void getOverflowMenu() {
-
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
             Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
@@ -87,6 +99,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action buttons
+        switch (item.getItemId()){
+            case R.id.action_update_data:
+                if(ConnectionHelper.checkNetworkConnection(this)){
+                    GetSelectsDataAsync dataAsync = new GetSelectsDataAsync(this);
+                    dataAsync.execute();
+                }
+                break;
+            case R.id.action_sync:
+                if(ConnectionHelper.checkNetworkConnection(this)){
+
+                }
+                break;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -99,14 +125,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         @Override
         public Fragment getItem(int i) {
             switch (i) {
-                /*case 0:
+                case 0:
                     // The first section of the app is the most interesting -- it offers
                     // a launchpad into the other demonstrations in this example application.
-                    return new LaunchpadSectionFragment();
-*/
+                    return new ReservedFragment();
                 default:
                     // The other sections of the app are dummy placeholders.
-                    Fragment fragment = new ReservedFragment();
+                    Fragment fragment = new SyncFragment();
                     /*Bundle args = new Bundle();
                     args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
                     fragment.setArguments(args);*/

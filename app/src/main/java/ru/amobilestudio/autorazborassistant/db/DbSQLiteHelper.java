@@ -1,6 +1,8 @@
 package ru.amobilestudio.autorazborassistant.db;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -13,6 +15,8 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "Dictionaries.db";
+
+    public static final String DB_PREFS = "DbPrefsFile";
 
     public static final String COLUMN_ID_VALUE = "id";
     public static final String COLUMN_NAME_VALUE = "name";
@@ -34,8 +38,9 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PART_LOCATION_ID = "location_id";
     public static final String COLUMN_PART_SUPPLIER_ID = "supplier_id";
     public static final String COLUMN_PART_BU_ID = "bu_id";
-    public static final String COLUMN_PART_CREATE_DATE= "create_time";
-    public static final String COLUMN_PART_UPDATE_DATE= "update_time";
+    public static final String COLUMN_PART_CREATE_DATE = "create_time";
+    public static final String COLUMN_PART_UPDATE_DATE = "update_time";
+    public static final String COLUMN_PART_USER_ID = "user_id";
     public static final String COLUMN_PART_STATE = "state";
     public static final String COLUMN_PART_STATUS = "status";
 
@@ -83,6 +88,7 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
                 COLUMN_PART_BU_ID + INT_TYPE + ", " +
                 COLUMN_PART_CREATE_DATE + TEXT_TYPE + ", " +
                 COLUMN_PART_UPDATE_DATE + INT_TYPE + ", " +
+                COLUMN_PART_USER_ID + INT_TYPE + ", " +
                 COLUMN_PART_STATUS + INT_TYPE + ", " +
                 COLUMN_PART_STATE + INT_TYPE +
                 " ); ";
@@ -105,6 +111,8 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
                     COLUMN_NAME_VALUE + TEXT_TYPE +
                     " ); ");
         }
+
+        setTrueDb(_context);
     }
 
     @Override
@@ -116,6 +124,8 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
         for (String s : TABLE_NAMES){
             db.execSQL(" DROP TABLE IF EXISTS " + s + ";");
         }
+
+        setFalseDb(_context);
     }
 
     @Override
@@ -123,4 +133,56 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
+    public String getValueById(int id, String tableName){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.query(tableName, new String[]{COLUMN_NAME_VALUE}, COLUMN_ID_VALUE + "=?",
+                new String[]{id + ""}, null, null, null, null);
+
+        String result = "";
+
+        if(id == 0) return result;
+
+        if(c.moveToFirst())
+            result = c.getString(c.getColumnIndex(COLUMN_NAME_VALUE));
+
+        return result;
+    }
+
+    public int getIdByValue(String name, String tableName){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.query(tableName, new String[] {COLUMN_ID_VALUE}, COLUMN_NAME_VALUE + "=?",
+                new String[] { name }, null, null, null, null);
+
+        int result = 0;
+        if(c.moveToFirst())
+            result = c.getInt(c.getColumnIndex(COLUMN_ID_VALUE));
+
+        return result;
+    }
+
+    public static void setTrueDb(Context context){
+
+        SharedPreferences dbInfo = context.getSharedPreferences(DB_PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = dbInfo.edit();
+
+        editor.putBoolean("isDb", true);
+        editor.commit();
+    }
+
+    public static void setFalseDb(Context context){
+
+        SharedPreferences dbInfo = context.getSharedPreferences(DB_PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = dbInfo.edit();
+
+        editor.putBoolean("isDb", false);
+        editor.commit();
+    }
+
+    public static boolean isCreateDb(Context context){
+        SharedPreferences dbInfo = context.getSharedPreferences(DB_PREFS, Context.MODE_PRIVATE);
+
+        return dbInfo.getBoolean("isDb", false);
+    }
 }
