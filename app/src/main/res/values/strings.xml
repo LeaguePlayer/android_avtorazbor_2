@@ -16,6 +16,7 @@
     <!--Main Activity-->
     <string name="empty_item">Не выбрано</string>
     <string name="hello_message">Вы авторизованны под именем:</string>
+    <string name="empty_text">Список пуст</string>
     <!--<string name="hello_message2">Выберите дальнейшее действие в меню.</string>-->
 
     <!--Menu Actions-->
@@ -75,4 +76,15 @@
     <string name="error_price_buy">Поле Стоимость(покупка) должно быть заполнено и больше нуля.</string>
     <string name="error_price_sell">Поле Стоимость(на продажу) должно быть заполнено и больше нуля.</string>
     <string name="error_cat_model">Поле Категория и Марка автомобиля должны быть заполнены.</string>
+
+    <!--part sync item-->
+    <string name="update_time_text">Обновлено:&#160;</string>
+    <string name="state_text">Состояние:&#160;</string>
+    <string name="photo_count">Кол-во фото:&#160;</string>
+
+    <!--states-->
+    <string name="state_no_sync">Не загружено</string>
+    <string name="state_start_sync">Заргужается</string>
+    <string name="state_success_sync">Загружено</string>
+    <string name="state_allow_sync">В очереди на загрузку</string>
 </resources>

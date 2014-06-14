@@ -2,27 +2,37 @@ package ru.amobilestudio.autorazborassistant.app;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
+import ru.amobilestudio.autorazborassistant.adapters.SelectsCursorAdapter;
 import ru.amobilestudio.autorazborassistant.custom.MyAutoComplete;
 import ru.amobilestudio.autorazborassistant.db.DbSQLiteHelper;
+import ru.amobilestudio.autorazborassistant.db.ImagesDataDb;
 import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
 import ru.amobilestudio.autorazborassistant.db.SelectsDataDb;
 import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
@@ -56,6 +66,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
     private static Button _takePhoto;
 
     private PartsDataDb _partsDataDb;
+    private ImagesDataDb _imagesDataDb;
     private ArrayList<String> _errors;
 
     private long _part_id;
@@ -68,6 +79,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         setContentView(R.layout.activity_add_part);
 
         _partsDataDb = new PartsDataDb(this);
+        _imagesDataDb = new ImagesDataDb(this);
         _errors = new ArrayList<String>();
 
         //init
@@ -96,7 +108,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //categories
         Cursor c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CATEGORIES);
-        SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        SelectsCursorAdapter cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
         _partsCategoryId = (MyAutoComplete) findViewById(R.id.parts_category_id);
         _partsCategoryId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -113,7 +125,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //car models
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CAR_MODELS);
-        cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
         _partsCarModelId = (MyAutoComplete) findViewById(R.id.parts_car_model_id);
         _partsCarModelId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -130,7 +142,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //locations
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_LOCATIONS);
-        cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
         _partsLocationId = (MyAutoComplete) findViewById(R.id.parts_location_id);
         _partsLocationId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -147,7 +159,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //suppliers
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_SUPPLIERS);
-        cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
         _partsSupplierId = (MyAutoComplete) findViewById(R.id.parts_supplier_id);
         _partsSupplierId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -164,7 +176,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //bu
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_BU_CARS);
-        cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
         _partsBuId = (MyAutoComplete) findViewById(R.id.parts_bu_id);
         _partsBuId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -203,6 +215,9 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         }else{
             _part_id = extras.getLong("part_id");
+
+            Cursor cc = _imagesDataDb.fetchAllImages(_part_id);
+            Log.d(ActivityHelper.TAG, "images count = " + cc.getCount());
 
             SharedPreferences part_info = getSharedPreferences(DbSQLiteHelper.DB_PREFS, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = part_info.edit();
@@ -296,7 +311,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
                 savePart(true);
                 break;
             case R.id.take_photo:
-//                takePhoto();
+                takePhoto();
                 break;
         }
 
@@ -321,13 +336,14 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             part.put(PartsDataDb.COLUMN_PART_NAME, _partsCategoryId.getText().toString() + ", " + _partsCarModelId.getText().toString());
 
             part.put(PartsDataDb.COLUMN_PART_STATE, PartsDataDb.STATE_ALLOW_SYNC);
+            part.put(PartsDataDb.COLUMN_PART_UPDATE_DATE, System.currentTimeMillis());
 
             if(publish)
                 part.put(PartsDataDb.COLUMN_PART_STATUS, PartsDataDb.STATUS_PUBLISH);
             else
                 part.put(PartsDataDb.COLUMN_PART_STATUS, PartsDataDb.STATUS_ON_DEVICE);
 
-            _partsDataDb.updatePart(_part_id, part);
+            _partsDataDb.seveToSyncPart(_part_id, part);
 
             finish();
         }else
@@ -361,16 +377,16 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
     String mCurrentPhotoPath;
 
-/*    private File createImageFile() throws IOException {
+    private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
-                imageFileName,  *//* prefix *//*
-                ".jpg",         *//* suffix *//*
-                storageDir      *//* directory *//*
+                imageFileName,
+                ".jpg",
+                storageDir
         );
 
         // Save a file: path for use with ACTION_VIEW intents
@@ -398,13 +414,23 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            File file = new File(mCurrentPhotoPath);
+//            File file = new File(mCurrentPhotoPath);
+            Log.d(ActivityHelper.TAG, "photo " + mCurrentPhotoPath);
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(mCurrentPhotoPath);
+            Uri contentUri = Uri.fromFile(f);
+            Log.d(ActivityHelper.TAG, "content uri - " + contentUri);
+            mediaScanIntent.setData(contentUri);
+            this.sendBroadcast(mediaScanIntent);
+//            if(file.exists() && Connection.checkNetworkConnection(this)){
+//                SendImageAsync sendImageAsync = new SendImageAsync(this);
+//                sendImageAsync.execute(file);
+//            }
 
-            if(file.exists() && Connection.checkNetworkConnection(this)){
-                SendImageAsync sendImageAsync = new SendImageAsync(this);
-                sendImageAsync.execute(file);
+            if(_part_id > 0){
+                _imagesDataDb.add(_part_id, contentUri.toString());
             }
 
         }
-    }*/
+    }
 }

@@ -10,6 +10,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,6 +53,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         super.onActivityCreated(savedInstanceState);
 
         _listView = getListView();
+        _listView.setEmptyView(getView().findViewById(R.id.empty_text));
         _partsDataDb = new PartsDataDb(getActivity());
 
         String[] from = new String[] {PartsDataDb.COLUMN_PART_ID, PartsDataDb.COLUMN_PART_NAME, PartsDataDb.COLUMN_PART_CREATE_DATE};
@@ -153,26 +156,38 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         builder.show();
     }
 
+    private void updateList(){
+        _cursorAdapter.swapCursor(_partsDataDb.fetchAllReservedParts(UserInfoHelper.getUserId(getActivity())));
+        _listView.scrollTo(0, 0);
+    }
+
     @Override
-    public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new ReserveCursorLoader(getActivity());
     }
 
     @Override
-    public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         _cursorAdapter.swapCursor(data);
     }
 
     @Override
-    public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
 
     }
 
     @Override
     public void onTaskCompleted() {
-        _cursorAdapter.swapCursor(_partsDataDb.fetchAllParts(UserInfoHelper.getUserId(getActivity())));
-        _listView.scrollTo(0, 0);
+        updateList();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        updateList();
+    }
+
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -182,7 +197,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         getActivity().startActivity(intent);
     }
 
-    static class ReserveCursorLoader extends android.support.v4.content.CursorLoader{
+    static class ReserveCursorLoader extends CursorLoader {
 
         private Context _context;
 
@@ -195,7 +210,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         public Cursor loadInBackground() {
             PartsDataDb dataDb = new PartsDataDb(_context);
 
-            return dataDb.fetchAllParts(UserInfoHelper.getUserId(_context));
+            return dataDb.fetchAllReservedParts(UserInfoHelper.getUserId(_context));
         }
     }
 }
