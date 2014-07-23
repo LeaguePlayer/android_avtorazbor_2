@@ -27,7 +27,7 @@
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:text="@string/article_text"
                     android:id="@+id/article_part" />
@@ -37,27 +37,6 @@
                     android:layout_height="32dp"
                     android:id="@+id/loader"
                     android:layout_marginLeft="5dp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/take_photo"
-                    android:id="@+id/take_photo" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/photos"
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
 
             </LinearLayout>
 
@@ -87,6 +66,8 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:layout_marginBottom="15dp">
 
                 <LinearLayout

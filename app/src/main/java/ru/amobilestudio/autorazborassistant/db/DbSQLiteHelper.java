@@ -70,6 +70,10 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
         _context = context;
     }
 
+    public Context getContext(){
+        return _context;
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
 

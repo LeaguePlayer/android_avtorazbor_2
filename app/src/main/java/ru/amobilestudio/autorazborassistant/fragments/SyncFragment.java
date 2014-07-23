@@ -15,10 +15,15 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import ru.amobilestudio.autorazborassistant.adapters.PartsSyncCursorAdapter;
 import ru.amobilestudio.autorazborassistant.app.AddPartActivity;
 import ru.amobilestudio.autorazborassistant.app.R;
 import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
+import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
 
 /**
@@ -29,6 +34,10 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     private PartsSyncCursorAdapter _cursorAdapter;
     private PartsDataDb _partsDataDb;
     private ListView _listView;
+    private ScheduledExecutorService _scheduledExecutorService;
+    private Runnable _updateListRunnable;
+
+    private int _interval = 1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,6 +48,14 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        _updateListRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateList();
+                ActivityHelper.debug("---------- update List -------------");
+            }
+        };
 
         _listView = getListView();
         _listView.setEmptyView(getView().findViewById(R.id.empty_text));
@@ -53,6 +70,8 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
 
         getLoaderManager().initLoader(0, null, this);
 
+        _scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        _scheduledExecutorService.scheduleAtFixedRate(_updateListRunnable, 0, _interval, TimeUnit.MINUTES);
     }
 
     @Override
@@ -83,9 +102,17 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
         super.onResume();
 
         updateList();
+        _scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        _scheduledExecutorService.scheduleAtFixedRate(_updateListRunnable, 0, _interval, TimeUnit.MINUTES);
     }
 
-    private void updateList(){
+    @Override
+    public void onPause() {
+        super.onPause();
+        _scheduledExecutorService.shutdown();
+    }
+
+    public void updateList(){
         _cursorAdapter.swapCursor(_partsDataDb.fetchForSyncParts(UserInfoHelper.getUserId(getActivity())));
     }
 

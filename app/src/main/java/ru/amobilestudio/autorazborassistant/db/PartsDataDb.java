@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import java.util.HashMap;
 
 import ru.amobilestudio.autorazborassistant.app.R;
+import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 
 /**
  * Created by vetal on 09.06.14.
@@ -56,16 +57,31 @@ public class PartsDataDb extends DbSQLiteHelper {
         return c;
     }
 
+    //for main AsyncTask
+    public Cursor fetchAllNoReseved(int userId){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?)";
+        String[] params = new String[] {userId + "", STATE_ALLOW_SYNC + "", STATE_NO_SYNC + ""};
+
+        ActivityHelper.debug(params.toString());
+
+        Cursor c = db.query(TABLE_NAME_PARTS, getAllColumns(), whereClause, params, null, null, null, null);
+
+        if(c != null)
+            c.moveToFirst();
+
+        return c;
+    }
+
     public Cursor fetchForSyncParts(int userId){
         SQLiteDatabase db = this.getReadableDatabase();
 
+        String[] params = new String[] { userId + "", STATE_ALLOW_SYNC + "",
+                STATE_SUCCESS_SYNC + "", STATE_START_SYNC + "", STATE_NO_SYNC + ""};
         String[] select = new String[] { BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_UPDATE_DATE, COLUMN_PART_STATE };
 
-        String whereClause = COLUMN_PART_USER_ID + "=? AND " +
-                COLUMN_PART_STATE + "=" + STATE_ALLOW_SYNC;
-
-        String[] params = new String[] { userId + "" };
-
+        String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?, ?, ?)";
         Cursor c = db.query(TABLE_NAME_PARTS, select, whereClause, params, null, null, null, null);
 
         if(c != null)
@@ -80,11 +96,38 @@ public class PartsDataDb extends DbSQLiteHelper {
         return db.rawQuery("select * from " + TABLE_NAME_PARTS +" where " + BaseColumns._ID + "=?", new String[] { id + "" });
     }
 
-    public void seveToSyncPart(long id, ContentValues cv){
+    public void saveToSyncPart(long id, ContentValues cv){
         SQLiteDatabase db = this.getWritableDatabase();
 
         if(id > 0)
             db.update(TABLE_NAME_PARTS, cv, BaseColumns._ID + "=?", new String[] { id + "" });
+    }
+
+    public void setStateToPart(long id, int state){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        if(id > 0 && states.containsKey(state)){
+            ContentValues cv = new ContentValues();
+            cv.put(COLUMN_PART_STATE, state);
+
+            db.update(TABLE_NAME_PARTS, cv, BaseColumns._ID + "=?", new String[] { id + "" });
+        }
+    }
+
+    public int getStatePart(long id){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] params = new String[] { id + ""};
+        String[] select = new String[] { BaseColumns._ID, COLUMN_PART_STATE };
+
+        Cursor c = db.query(TABLE_NAME_PARTS, select, BaseColumns._ID + "=?", params, null, null, null, null);
+
+        if(c != null)
+            c.moveToFirst();
+        else
+            return 0;
+
+        return c.getInt(c.getColumnIndex(COLUMN_PART_STATE));
     }
 
     //insert or update part
@@ -127,5 +170,27 @@ public class PartsDataDb extends DbSQLiteHelper {
 
             db.insert(TABLE_NAME_PARTS, null, part);
         }
+    }
+
+    private static String[] getAllColumns(){
+
+        return new String[]{
+            BaseColumns._ID,
+            COLUMN_PART_ID,
+            COLUMN_PART_NAME,
+            COLUMN_PART_PRICE_SELL,
+            COLUMN_PART_PRICE_BUY,
+            COLUMN_PART_COMMENT,
+            COLUMN_PART_CATEGORY_ID,
+            COLUMN_PART_CAR_MODEL_ID,
+            COLUMN_PART_LOCATION_ID,
+            COLUMN_PART_SUPPLIER_ID,
+            COLUMN_PART_BU_ID,
+            COLUMN_PART_CREATE_DATE,
+            COLUMN_PART_UPDATE_DATE,
+            COLUMN_PART_USER_ID,
+            COLUMN_PART_STATE,
+            COLUMN_PART_STATUS
+        };
     }
 }

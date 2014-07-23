@@ -17,13 +17,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,19 +67,21 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
     private static Button _sendButton;
     private static Button _publishButton;
     private static Button _takePhoto;
+    private static Button _viewPhoto;
 
     private PartsDataDb _partsDataDb;
     private ImagesDataDb _imagesDataDb;
     private ArrayList<String> _errors;
 
     private long _part_id;
+    private int _count_images;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityHelper.hideActionBar(this);
 
         setContentView(R.layout.activity_add_part);
+        getOverflowMenu();
 
         _partsDataDb = new PartsDataDb(this);
         _imagesDataDb = new ImagesDataDb(this);
@@ -199,9 +204,6 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         _publishButton = (Button) findViewById(R.id.publish_part_button);
         _publishButton.setOnClickListener(this);
 
-        _takePhoto = (Button) findViewById(R.id.take_photo);
-        _takePhoto.setOnClickListener(this);
-
         //setSelectsField(this);
 
         //when click on item ListView
@@ -216,9 +218,6 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         }else{
             _part_id = extras.getLong("part_id");
 
-            Cursor cc = _imagesDataDb.fetchAllImages(_part_id);
-            Log.d(ActivityHelper.TAG, "images count = " + cc.getCount());
-
             SharedPreferences part_info = getSharedPreferences(DbSQLiteHelper.DB_PREFS, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = part_info.edit();
 
@@ -226,6 +225,19 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             editor.commit();
 
             setPartForm(_part_id);
+        }
+    }
+
+    private void getOverflowMenu() {
+        try {
+            ViewConfiguration config = ViewConfiguration.get(this);
+            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            if(menuKeyField != null) {
+                menuKeyField.setAccessible(true);
+                menuKeyField.setBoolean(config, false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -283,7 +295,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.add_part, menu);
+        getMenuInflater().inflate(R.menu.add_part_menu, menu);
         return true;
     }
 
@@ -292,10 +304,21 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        /*int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }*/
+        switch (item.getItemId()){
+            case R.id.take_photo:
+                takePhoto();
+                break;
+            case R.id.view_gallery:
+                if(_imagesDataDb.getCount(_part_id) > 0){
+                    Intent intent = new Intent(this, GalleryActivity.class);
+                    intent.putExtra("part_id", _part_id);
+                    startActivity(intent);
+                }else{
+                    AlertDialogHelper.showAlertDialog(this, R.string.alert_title, R.string.empty_images, true);
+                }
+
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -309,9 +332,6 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
                 break;
             case R.id.publish_part_button:
                 savePart(true);
-                break;
-            case R.id.take_photo:
-                takePhoto();
                 break;
         }
 
@@ -343,7 +363,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             else
                 part.put(PartsDataDb.COLUMN_PART_STATUS, PartsDataDb.STATUS_ON_DEVICE);
 
-            _partsDataDb.seveToSyncPart(_part_id, part);
+            _partsDataDb.saveToSyncPart(_part_id, part);
 
             finish();
         }else
@@ -391,6 +411,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
+        Log.d(ActivityHelper.TAG, "curr = " + mCurrentPhotoPath);
         return image;
     }
 
@@ -413,19 +434,19 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            File file = new File(mCurrentPhotoPath);
-            Log.d(ActivityHelper.TAG, "photo " + mCurrentPhotoPath);
             Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
+            if(mCurrentPhotoPath == null){
+                Toast.makeText(this, R.string.error_photo, Toast.LENGTH_LONG).show();
+                return;
+            }
+
             File f = new File(mCurrentPhotoPath);
             Uri contentUri = Uri.fromFile(f);
-            Log.d(ActivityHelper.TAG, "content uri - " + contentUri);
             mediaScanIntent.setData(contentUri);
             this.sendBroadcast(mediaScanIntent);
-//            if(file.exists() && Connection.checkNetworkConnection(this)){
-//                SendImageAsync sendImageAsync = new SendImageAsync(this);
-//                sendImageAsync.execute(file);
-//            }
 
             if(_part_id > 0){
                 _imagesDataDb.add(_part_id, contentUri.toString());

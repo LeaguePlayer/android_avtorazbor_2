@@ -2,6 +2,8 @@ package ru.amobilestudio.autorazborassistant.app;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -22,11 +24,14 @@ import ru.amobilestudio.autorazborassistant.fragments.ReservedFragment;
 import ru.amobilestudio.autorazborassistant.fragments.SyncFragment;
 import ru.amobilestudio.autorazborassistant.helpers.ConnectionHelper;
 import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
+import ru.amobilestudio.autorazborassistant.receivers.NetworkChangeReceiver;
 
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
-    AppSectionsPagerAdapter mAppSectionsPagerAdapter;
+    private NetworkChangeReceiver _networkChangeReceiver;
+
+    public AppSectionsPagerAdapter mAppSectionsPagerAdapter;
 
     ViewPager mViewPager;
 
@@ -34,6 +39,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        _networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(_networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         //TODO: delete this lines
         //------------------------------------------------------
@@ -68,9 +76,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             }
         });
 
-        /*GetReserveAsync reserveAsync = new GetReserveAsync(this);
-        reserveAsync.execute(2);*/
-
         //add tabs
         actionBar.addTab(actionBar.newTab().setText(getString(R.string.tab1)).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(getString(R.string.tab2)).setTabListener(this));
@@ -87,6 +92,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        _networkChangeReceiver.cancelMainAsync();
+        unregisterReceiver(_networkChangeReceiver);
     }
 
     @Override
@@ -126,16 +138,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    // The first section of the app is the most interesting -- it offers
-                    // a launchpad into the other demonstrations in this example application.
                     return new ReservedFragment();
                 default:
-                    // The other sections of the app are dummy placeholders.
-                    Fragment fragment = new SyncFragment();
-                    /*Bundle args = new Bundle();
-                    args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
-                    fragment.setArguments(args);*/
-                    return fragment;
+                    return new SyncFragment();
             }
         }
 
