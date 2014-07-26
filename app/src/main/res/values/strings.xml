@@ -91,6 +91,7 @@
     <string name="state_start_sync">Заргужается</string>
     <string name="state_success_sync">Загружено</string>
     <string name="state_allow_sync">В очереди на загрузку</string>
+    <string name="state_error_sync">Ошибка при синхронизации</string>
 
     <!--gallery activity-->
     <string name="delete_button">Удалить</string>

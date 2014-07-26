@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.JsonReader;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -26,6 +27,8 @@ public class GetSelectsDataAsync extends AsyncTask<Void, Integer, Void> {
 
     private Context _context;
     private ProgressDialog _progress;
+
+    private boolean _throwEx = false;
 
     public GetSelectsDataAsync(Context context) {
 
@@ -95,6 +98,7 @@ public class GetSelectsDataAsync extends AsyncTask<Void, Integer, Void> {
 
         } catch (IOException e) {
             e.printStackTrace();
+            _throwEx = true;
         }
 
         return null;
@@ -135,5 +139,9 @@ public class GetSelectsDataAsync extends AsyncTask<Void, Integer, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         _progress.dismiss();
+
+        if(_throwEx)
+            Toast.makeText(_context,
+                    _context.getString(R.string.connection_error_title), Toast.LENGTH_LONG).show();
     }
 }

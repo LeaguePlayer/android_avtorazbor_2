@@ -14,7 +14,7 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
     private Context _context;
 
     public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "Dictionaries.db";
+    public static final String DATABASE_NAME = "AutoAssistant.db";
 
     public static final String DB_PREFS = "DbPrefsFile";
 
@@ -90,7 +90,7 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
                 COLUMN_PART_LOCATION_ID + INT_TYPE + ", " +
                 COLUMN_PART_SUPPLIER_ID + INT_TYPE + ", " +
                 COLUMN_PART_BU_ID + INT_TYPE + ", " +
-                COLUMN_PART_CREATE_DATE + TEXT_TYPE + ", " +
+                COLUMN_PART_CREATE_DATE + INT_TYPE + ", " +
                 COLUMN_PART_UPDATE_DATE + INT_TYPE + ", " +
                 COLUMN_PART_USER_ID + INT_TYPE + ", " +
                 COLUMN_PART_STATUS + INT_TYPE + ", " +

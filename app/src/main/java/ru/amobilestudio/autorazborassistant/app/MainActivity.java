@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import java.lang.reflect.Field;
 
+import ru.amobilestudio.autorazborassistant.asyncs.GetAllPartsAsync;
 import ru.amobilestudio.autorazborassistant.asyncs.GetSelectsDataAsync;
 import ru.amobilestudio.autorazborassistant.fragments.ReservedFragment;
 import ru.amobilestudio.autorazborassistant.fragments.SyncFragment;
@@ -115,12 +117,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             case R.id.action_update_data:
                 if(ConnectionHelper.checkNetworkConnection(this)){
                     GetSelectsDataAsync dataAsync = new GetSelectsDataAsync(this);
-                    dataAsync.execute();
+                    dataAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 break;
             case R.id.action_sync:
                 if(ConnectionHelper.checkNetworkConnection(this)){
-
+                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(this);
+                    allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 break;
         }

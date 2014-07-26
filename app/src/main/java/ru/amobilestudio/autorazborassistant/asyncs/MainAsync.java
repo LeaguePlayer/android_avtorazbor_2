@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,8 +53,9 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
 
         //infinity loop
         while(!this.isCancelled()){
+            ActivityHelper.debug("start iteration");
             PartsDataDb partsDataDb = new PartsDataDb(_context);
-            _cursor = partsDataDb.fetchAllNoReseved(UserInfoHelper.getUserId(_context));
+            _cursor = partsDataDb.fetchAllNoReserved(UserInfoHelper.getUserId(_context));
 
             if(_cursor != null && _cursor.moveToFirst()){
                 do {
@@ -61,7 +64,7 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
                     //this.isCancelled();
                 } while (_cursor.moveToNext());
             }
-            ActivityHelper.debug("iterration");
+            ActivityHelper.debug("end iteration");
             try {
                 Thread.sleep(3 * 60 * 1000);
             } catch (InterruptedException e) {
@@ -77,7 +80,7 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
     protected void onCancelled() {
         super.onCancelled();
 
-        if(_cursor != null)
+        if(_cursor != null && _cursor.getCount() > 0)
             saveState(_cursor);
     }
 
@@ -127,6 +130,23 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
             val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_BU_ID));
             strVal = val != 0 ? val + "" : "";
             nameValuePairs.add(new BasicNameValuePair("UsedCar", strVal));
+
+            //dates (format: yyyy-MM-dd HH:mm:ss)
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            //create_time
+            val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_CREATE_DATE));
+            if(val != 0){
+                Date date = new Date(val);
+                nameValuePairs.add(new BasicNameValuePair("Part[create_time]", dateFormat.format(date)));
+            }
+
+            //update_time
+            val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_UPDATE_DATE));
+            if(val != 0){
+                Date date = new Date(val);
+                nameValuePairs.add(new BasicNameValuePair("Part[update_time]", dateFormat.format(date)));
+            }
 
             Log.d(ActivityHelper.TAG, "nameValuePairs = " + nameValuePairs);
 
@@ -191,6 +211,13 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
             reader.endObject();
 
             if(_errors.isEmpty()){
+
+                //if publish remove part from db device
+                if(c.getInt(c.getColumnIndex(PartsDataDb.COLUMN_PART_STATUS)) == PartsDataDb.STATUS_PUBLISH){
+                    _partsDataDb.deletePart(c.getLong(c.getColumnIndex(BaseColumns._ID)));
+                    return;
+                }
+
                 _partsDataDb.setStateToPart(c.getLong(c.getColumnIndex(BaseColumns._ID)), PartsDataDb.STATE_SUCCESS_SYNC);
 
                 //update list
@@ -215,7 +242,7 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
     private void saveState(Cursor c){
         long id = c.getLong(c.getColumnIndex(BaseColumns._ID));
         if(_partsDataDb.getStatePart(id) == PartsDataDb.STATE_START_SYNC || _partsDataDb.getStatePart(id) == PartsDataDb.STATE_ALLOW_SYNC){
-            _partsDataDb.setStateToPart(id, PartsDataDb.STATE_NO_SYNC);
+            _partsDataDb.setStateToPart(id, PartsDataDb.STATE_ERROR_SYNC);
             publishProgress();
         }
     }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -15,15 +16,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import ru.amobilestudio.autorazborassistant.adapters.PartsSyncCursorAdapter;
 import ru.amobilestudio.autorazborassistant.app.AddPartActivity;
 import ru.amobilestudio.autorazborassistant.app.R;
 import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
-import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
 
 /**
@@ -34,10 +30,8 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     private PartsSyncCursorAdapter _cursorAdapter;
     private PartsDataDb _partsDataDb;
     private ListView _listView;
-    private ScheduledExecutorService _scheduledExecutorService;
-    private Runnable _updateListRunnable;
 
-    private int _interval = 1;
+    private int _interval = 30 * 1000; //30 seconds
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,29 +43,18 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        _updateListRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateList();
-                ActivityHelper.debug("---------- update List -------------");
-            }
-        };
-
         _listView = getListView();
         _listView.setEmptyView(getView().findViewById(R.id.empty_text));
         _partsDataDb = new PartsDataDb(getActivity());
 
         String[] from = new String[] {PartsDataDb.COLUMN_PART_ID, PartsDataDb.COLUMN_PART_NAME, PartsDataDb.COLUMN_PART_UPDATE_DATE};
-        int[] to = new int[] {R.id.part_id, R.id.part_name, R.id.part_date};
+        int[] to = new int[] {R.id.part_id, R.id.part_name, R.id.part_update};
 
         _cursorAdapter = new PartsSyncCursorAdapter(getActivity(), R.layout.part_sync_item, null, from, to, 0);
         _listView.setOnItemClickListener(this);
         _listView.setAdapter(_cursorAdapter);
 
         getLoaderManager().initLoader(0, null, this);
-
-        _scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        _scheduledExecutorService.scheduleAtFixedRate(_updateListRunnable, 0, _interval, TimeUnit.MINUTES);
     }
 
     @Override
@@ -100,20 +83,27 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     @Override
     public void onResume() {
         super.onResume();
-
         updateList();
-        _scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        _scheduledExecutorService.scheduleAtFixedRate(_updateListRunnable, 0, _interval, TimeUnit.MINUTES);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                updateList();
+                handler.postDelayed(this, _interval);
+            }
+        }, _interval);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        _scheduledExecutorService.shutdown();
     }
 
     public void updateList(){
         _cursorAdapter.swapCursor(_partsDataDb.fetchForSyncParts(UserInfoHelper.getUserId(getActivity())));
+        _listView.invalidateViews();
     }
 
     static class SyncPartsCursorLoader extends CursorLoader {

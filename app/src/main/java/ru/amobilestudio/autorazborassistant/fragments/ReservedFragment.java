@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -56,8 +57,8 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         _listView.setEmptyView(getView().findViewById(R.id.empty_text));
         _partsDataDb = new PartsDataDb(getActivity());
 
-        String[] from = new String[] {PartsDataDb.COLUMN_PART_ID, PartsDataDb.COLUMN_PART_NAME, PartsDataDb.COLUMN_PART_CREATE_DATE};
-        int[] to = new int[] {R.id.part_id, R.id.part_name, R.id.part_date};
+        String[] from = new String[] {PartsDataDb.COLUMN_PART_ID, PartsDataDb.COLUMN_PART_NAME};
+        int[] to = new int[] {R.id.part_id, R.id.part_name};
 
         _cursorAdapter = new SimpleCursorAdapter(getActivity(), R.layout.part_item, null, from, to, 0);
         _listView.setOnItemClickListener(this);
@@ -142,7 +143,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
 
                 int count = Integer.parseInt(input.getText().toString());
                 GetReserveAsync dataAsync = new GetReserveAsync(getActivity(), _taskCompleted);
-                dataAsync.execute(count);
+                dataAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, count);
             }
         });
 
@@ -159,6 +160,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
     private void updateList(){
         _cursorAdapter.swapCursor(_partsDataDb.fetchAllReservedParts(UserInfoHelper.getUserId(getActivity())));
         _listView.scrollTo(0, 0);
+        _listView.invalidateViews();
     }
 
     @Override

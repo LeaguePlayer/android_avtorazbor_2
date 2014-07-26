@@ -9,7 +9,6 @@ import android.provider.BaseColumns;
 import java.util.HashMap;
 
 import ru.amobilestudio.autorazborassistant.app.R;
-import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 
 /**
  * Created by vetal on 09.06.14.
@@ -22,6 +21,7 @@ public class PartsDataDb extends DbSQLiteHelper {
     public static final int STATE_START_SYNC = 2;
     public static final int STATE_SUCCESS_SYNC = 3;
     public static final int STATE_ALLOW_SYNC = 4;
+    public static final int STATE_ERROR_SYNC = 5;
 
     //statuses
     public static final int STATUS_PUBLISH = 1;
@@ -41,6 +41,7 @@ public class PartsDataDb extends DbSQLiteHelper {
         states.put(STATE_START_SYNC, context.getString(R.string.state_start_sync));
         states.put(STATE_SUCCESS_SYNC, context.getString(R.string.state_success_sync));
         states.put(STATE_ALLOW_SYNC, context.getString(R.string.state_allow_sync));
+        states.put(STATE_ERROR_SYNC, context.getString(R.string.state_error_sync));
     }
 
     public Cursor fetchAllReservedParts(int userId){
@@ -48,8 +49,9 @@ public class PartsDataDb extends DbSQLiteHelper {
 
         //Cursor c = db.query(TABLE_NAME_PARTS, new String[] {BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_CREATE_DATE},
         //        null, null, null, null, null);
-        Cursor c = db.query(TABLE_NAME_PARTS, new String[] { BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_CREATE_DATE },
-                COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATUS + "=" + STATUS_RESERVE_DEVICE, new String[] { userId + "" }, null, null, null, null);
+        String[] select = new String[] { BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_CREATE_DATE };
+        Cursor c = db.query(TABLE_NAME_PARTS, select, COLUMN_PART_USER_ID + "=? AND " +
+                COLUMN_PART_STATUS + "=" + STATUS_RESERVE_DEVICE, new String[] { userId + "" }, null, null, null, null);
 
         if(c != null)
             c.moveToFirst();
@@ -58,13 +60,14 @@ public class PartsDataDb extends DbSQLiteHelper {
     }
 
     //for main AsyncTask
-    public Cursor fetchAllNoReseved(int userId){
+    public Cursor fetchAllNoReserved(int userId){
         SQLiteDatabase db = this.getReadableDatabase();
 
         String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?)";
-        String[] params = new String[] {userId + "", STATE_ALLOW_SYNC + "", STATE_NO_SYNC + ""};
+        String[] params = new String[] {userId + "", STATE_ALLOW_SYNC + "", STATE_ERROR_SYNC + ""};
 
-        ActivityHelper.debug(params.toString());
+        /*String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATUS + "!=?";
+        String[] params = new String[] {userId + "", STATUS_RESERVE_DEVICE + ""};*/
 
         Cursor c = db.query(TABLE_NAME_PARTS, getAllColumns(), whereClause, params, null, null, null, null);
 
@@ -78,7 +81,8 @@ public class PartsDataDb extends DbSQLiteHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String[] params = new String[] { userId + "", STATE_ALLOW_SYNC + "",
-                STATE_SUCCESS_SYNC + "", STATE_START_SYNC + "", STATE_NO_SYNC + ""};
+                STATE_SUCCESS_SYNC + "", STATE_START_SYNC + "", STATE_ERROR_SYNC + ""};
+
         String[] select = new String[] { BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_UPDATE_DATE, COLUMN_PART_STATE };
 
         String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?, ?, ?)";
@@ -134,8 +138,14 @@ public class PartsDataDb extends DbSQLiteHelper {
     public void addPart(ContentValues cv){
         SQLiteDatabase db = this.getWritableDatabase();
 
+        /*SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date d = dateFormat.parse(date);
+        ActivityHelper.debug(d.getTime() + " create integer date");*/
+
+        // stop HERE
+
         //get Id
-        String ID = cv.getAsString(COLUMN_PART_ID);
+        /*String ID = cv.getAsString(COLUMN_PART_ID);
 
         //search Part in DB's device
         Cursor cursor = db.rawQuery("select 1 from " + TABLE_NAME_PARTS +" where " + COLUMN_PART_ID + "=?", new String[] { ID });
@@ -149,7 +159,7 @@ public class PartsDataDb extends DbSQLiteHelper {
         }else{
             cv.put(COLUMN_PART_STATE, 0);
             db.insert(TABLE_NAME_PARTS, null, cv);
-        }
+        }*/
     }
 
     //add Reserve part
@@ -165,11 +175,30 @@ public class PartsDataDb extends DbSQLiteHelper {
             part.put(COLUMN_PART_STATE, STATE_NO_SYNC);
             part.put(COLUMN_PART_STATUS, STATUS_RESERVE_DEVICE);
             part.put(COLUMN_PART_USER_ID, userId);
+            part.put(COLUMN_PART_CREATE_DATE, System.currentTimeMillis());
 
             SQLiteDatabase db = this.getWritableDatabase();
 
             db.insert(TABLE_NAME_PARTS, null, part);
         }
+    }
+
+    public void deletePart(long id){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //delete part images
+        ImagesDataDb imagesDataDb = new ImagesDataDb(_context);
+        Cursor c = imagesDataDb.fetchAllImages(id);
+
+        if(c.getCount() > 0 && c != null){
+            do{
+                imagesDataDb.delete(c.getLong(c.getColumnIndex(BaseColumns._ID)));
+            }while(c.moveToNext());
+        }
+
+        //delete part
+        db.delete(TABLE_NAME_PARTS, BaseColumns._ID + "=?", new String[]{ id + "" });
+        c.close();
     }
 
     private static String[] getAllColumns(){

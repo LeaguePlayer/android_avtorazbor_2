@@ -32,10 +32,10 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
                     if(_mainAsync == null){
                         ActivityHelper.debug("not create async");
                         _mainAsync = new MainAsync(context);
-                        _mainAsync.execute();
+                        _mainAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     }else if(_mainAsync.getStatus() == AsyncTask.Status.FINISHED){
                         _mainAsync = new MainAsync(context);
-                        _mainAsync.execute();
+                        _mainAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     }
                 }else{
                     cancelMainAsync();

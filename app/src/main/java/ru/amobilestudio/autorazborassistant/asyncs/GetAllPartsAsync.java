@@ -21,11 +21,12 @@ import java.util.ArrayList;
 import ru.amobilestudio.autorazborassistant.app.R;
 import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
 import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
+import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
 
 /**
  * Created by vetal on 10.06.14.
  */
-public class GetAllPartsAsync extends AsyncTask<Integer, Void, Void> {
+public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
 
     private ArrayList<String> _errors;
 
@@ -45,8 +46,6 @@ public class GetAllPartsAsync extends AsyncTask<Integer, Void, Void> {
         _progress.setCancelable(true);
         _progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
-//        _parts = new ArrayList<Part>();
-
         _sqLiteHelper = new PartsDataDb(context);
     }
 
@@ -58,9 +57,9 @@ public class GetAllPartsAsync extends AsyncTask<Integer, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Integer... ids) {
+    protected Void doInBackground(Void... voids) {
 
-        String url = ActivityHelper.HOST + "api/getAllParts?user_id=" + ids[0];
+        String url = ActivityHelper.HOST + "api/allParts?user_id=" + UserInfoHelper.getUserId(_context);
 
         try {
             HttpClient httpclient = new DefaultHttpClient(); // for port 80 requests!
@@ -92,18 +91,21 @@ public class GetAllPartsAsync extends AsyncTask<Integer, Void, Void> {
                             while(reader.hasNext()){
                                 reader.beginObject();
 
-//                                Part part = new Part();
                                 ContentValues part = new ContentValues();
 
                                 while(reader.hasNext()){
                                     String part_field = reader.nextName();
 
                                     if(part_field.equals("id")){
-                                        part.put(PartsDataDb.COLUMN_PART_ID, reader.nextInt());
+                                        long id = reader.nextLong();
+                                        part.put(PartsDataDb.COLUMN_PART_ID, id);
+                                        ActivityHelper.debug(id + " part");
                                     }else if(part_field.equals("name")){
                                         part.put(PartsDataDb.COLUMN_PART_NAME, reader.nextString());
-                                    }else if(part_field.equals("create_date")){
+                                    }else if(part_field.equals("create_time")){
                                         part.put(PartsDataDb.COLUMN_PART_CREATE_DATE, reader.nextString());
+                                    }else if(part_field.equals("update_time") && reader.peek() != JsonToken.NULL){
+                                        part.put(PartsDataDb.COLUMN_PART_UPDATE_DATE, reader.nextString());
                                     }else if(part_field.equals("price_sell") && reader.peek() != JsonToken.NULL){
                                         part.put(PartsDataDb.COLUMN_PART_PRICE_SELL, reader.nextDouble());
                                     }else if(part_field.equals("price_buy")  && reader.peek() != JsonToken.NULL){

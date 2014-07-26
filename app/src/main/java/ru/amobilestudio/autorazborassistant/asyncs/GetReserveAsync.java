@@ -69,6 +69,8 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
 
         _userId = UserInfoHelper.getUserId(context);
 
+        ActivityHelper.debug(_userId + " --- ");
+
         _listener = onTaskCompleted;
     }
 
@@ -82,9 +84,13 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
     @Override
     protected Void doInBackground(Integer... counts) {
 
+        ActivityHelper.debug(_userId + " --- " + counts[0]);
+
         if(_userId > 0 && counts[0] > 0){
             HttpClient httpclient = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet(ActivityHelper.HOST + "api/reserve?count=" + counts[0] + "&" + "user_id=" + _userId + "&" + "secretKey=RazborApp");
+
+            ActivityHelper.debug(_userId + " --- " + counts[0]);
 
             try {
                 // Execute HTTP Post Request
@@ -93,6 +99,8 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
 
                 JsonReader reader = new JsonReader(new InputStreamReader(inputStream, "UTF-8"));
                 reader.beginObject();
+
+                ActivityHelper.debug(inputStream.toString());
 
                 PartsDataDb partsDataDb = new PartsDataDb(_context);
 
@@ -127,8 +135,10 @@ public class GetReserveAsync extends AsyncTask<Integer, Void, Void> {
 
             } catch (ClientProtocolException e) {
                 _throwEx = true;
+                ActivityHelper.debug("ClientProtocolException");
             } catch (IOException e) {
                 _throwEx = true;
+                ActivityHelper.debug("IOException");
             }
         }
 

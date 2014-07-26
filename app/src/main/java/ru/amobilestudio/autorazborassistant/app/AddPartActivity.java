@@ -339,7 +339,6 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
     private void savePart(boolean publish){
 
-
         if(validateForm()){
             ContentValues part = new ContentValues();
 

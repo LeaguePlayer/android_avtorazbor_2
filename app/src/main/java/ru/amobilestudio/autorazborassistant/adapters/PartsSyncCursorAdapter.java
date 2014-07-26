@@ -47,7 +47,6 @@ public class PartsSyncCursorAdapter extends SimpleCursorAdapter {
         tv = (TextView) view.findViewById(R.id.part_name);
         tv.setText(cursor.getString(cursor.getColumnIndex(PartsDataDb.COLUMN_PART_NAME)));
 
-
         //set update date
         long dateMilli = cursor.getLong(cursor.getColumnIndex(PartsDataDb.COLUMN_PART_UPDATE_DATE));
         Date updateDate = new Date(dateMilli);
