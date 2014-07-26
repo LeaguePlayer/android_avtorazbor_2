@@ -6,9 +6,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import ru.amobilestudio.autorazborassistant.app.R;
+import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 
 /**
  * Created by vetal on 09.06.14.
@@ -137,29 +141,53 @@ public class PartsDataDb extends DbSQLiteHelper {
     //insert or update part
     public void addPart(ContentValues cv){
         SQLiteDatabase db = this.getWritableDatabase();
-
-        /*SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date d = dateFormat.parse(date);
-        ActivityHelper.debug(d.getTime() + " create integer date");*/
-
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // stop HERE
 
         //get Id
-        /*String ID = cv.getAsString(COLUMN_PART_ID);
+        String partId = cv.getAsString(COLUMN_PART_ID);
 
         //search Part in DB's device
-        Cursor cursor = db.rawQuery("select 1 from " + TABLE_NAME_PARTS +" where " + COLUMN_PART_ID + "=?", new String[] { ID });
+        String[] params = new String[] { partId + ""};
+        String[] select = new String[] { BaseColumns._ID, COLUMN_PART_UPDATE_DATE };
+
+        Cursor cursor = db.query(TABLE_NAME_PARTS, select, COLUMN_PART_ID + "=?",
+                params, null, null, null, null);
+        //Cursor cursor = db.rawQuery("select 1 from " + TABLE_NAME_PARTS +" where " + COLUMN_PART_ID + "=?", new String[] { ID });
         boolean exists = (cursor.getCount() > 0);
-        cursor.close();
+
+        String newUpdateDate = cv.getAsString(COLUMN_PART_UPDATE_DATE);
+        long newUpdateTime = 0;
+        if(newUpdateDate != null && !newUpdateDate.equals("") && !newUpdateDate.equals("null")) {
+            try {
+                Date d = dateFormat.parse(newUpdateDate);
+                newUpdateTime = d.getTime();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
 
         //if exist update else add to Db
-        if(exists){
-            cv.put(COLUMN_PART_UPDATE_DATE, System.currentTimeMillis());
-            db.update(TABLE_NAME_PARTS, cv, COLUMN_PART_ID + "=?", new String[]{ ID });
+        if(exists && cursor.moveToFirst()){
+            long oldUpdatetime = cursor.getLong(cursor.getColumnIndex(COLUMN_PART_UPDATE_DATE));
+            ActivityHelper.debug("old - " + oldUpdatetime + " new - " + newUpdateTime);
+            if (newUpdateTime > 0 && newUpdateTime > oldUpdatetime){
+                cv.put(COLUMN_PART_UPDATE_DATE, newUpdateTime);
+            }else
+                cv.put(COLUMN_PART_UPDATE_DATE, oldUpdatetime);
+            db.update(TABLE_NAME_PARTS, cv, COLUMN_PART_ID + "=?", new String[]{ partId });
         }else{
-            cv.put(COLUMN_PART_STATE, 0);
-            db.insert(TABLE_NAME_PARTS, null, cv);
-        }*/
+            try {
+                Date d = dateFormat.parse(cv.getAsString(COLUMN_PART_CREATE_DATE));
+                cv.put(COLUMN_PART_STATE, STATE_SUCCESS_SYNC);
+                cv.put(COLUMN_PART_CREATE_DATE, d.getTime());
+                db.insert(TABLE_NAME_PARTS, null, cv);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        cursor.close();
     }
 
     //add Reserve part

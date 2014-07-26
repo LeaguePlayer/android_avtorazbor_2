@@ -97,9 +97,7 @@ public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
                                     String part_field = reader.nextName();
 
                                     if(part_field.equals("id")){
-                                        long id = reader.nextLong();
-                                        part.put(PartsDataDb.COLUMN_PART_ID, id);
-                                        ActivityHelper.debug(id + " part");
+                                        part.put(PartsDataDb.COLUMN_PART_ID, reader.nextLong());
                                     }else if(part_field.equals("name")){
                                         part.put(PartsDataDb.COLUMN_PART_NAME, reader.nextString());
                                     }else if(part_field.equals("create_time")){
