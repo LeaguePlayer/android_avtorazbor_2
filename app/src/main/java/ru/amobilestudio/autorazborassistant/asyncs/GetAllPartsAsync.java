@@ -34,11 +34,12 @@ public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
     private ProgressDialog _progress;
 
     private PartsDataDb _sqLiteHelper;
+    private OnTaskCompleted _taskCompleted;
 
     //all parts
 //    private ArrayList<Part> _parts;
 
-    public GetAllPartsAsync(Context context) {
+    public GetAllPartsAsync(Context context, OnTaskCompleted taskCompleted) {
         _context = context;
         _progress = new ProgressDialog(context);
         _progress.setTitle(context.getString(R.string.load_message));
@@ -47,6 +48,7 @@ public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
         _progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
         _sqLiteHelper = new PartsDataDb(context);
+        _taskCompleted = taskCompleted;
     }
 
     @Override
@@ -153,6 +155,7 @@ public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(Void);
 
         _progress.dismiss();
+        _taskCompleted.onTaskCompleted();
 
         /*MainActivity activity = (MainActivity) _context;
         ListView listView = (ListView) activity.findViewById(android.R.id.list);

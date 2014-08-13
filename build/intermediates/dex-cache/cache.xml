@@ -2,6 +2,24 @@
 <pre-dex-items>
 
     <item
+        dex="/home/vetal/android/projects/AutoRazborAssistant/app/build/intermediates/pre-dexed/debug/httpmime-4.3.3-79441533e0e368cb633158c07bf683dbe8e45835.jar"
+        jar="/home/vetal/android/projects/AutoRazborAssistant/app/libs/httpmime-4.3.3.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="e02368d7b56c0c376f227378a4f77de62864d020"/>
+    <item
+        dex="/home/vetal/android/projects/AutoRazborAssistant/app/build/intermediates/pre-dexed/debug/httpclient-4.3.3-805f50fca1f1af242979c9bdb0521e356a5d7c28.jar"
+        jar="/home/vetal/android/projects/AutoRazborAssistant/app/libs/httpclient-4.3.3.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="18f4247ff4572a074444572cee34647c43e7c9c7"/>
+    <item
+        dex="/home/vetal/android/projects/AutoRazborAssistant/app/build/intermediates/pre-dexed/debug/httpcore-4.3.2-15b24e57374fa96c314ab79bd23edb686ba3568c.jar"
+        jar="/home/vetal/android/projects/AutoRazborAssistant/app/libs/httpcore-4.3.2.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="31fbbff1ddbf98f3aa7377c94d33b0447c646b6e"/>
+    <item
         dex="/home/vetal/android/projects/AutoRazborAssistant/app/build/intermediates/pre-dexed/debug/support-v4-19.1.0-c8fc8e8058fb691118d3ac6923680bfdc3ff491a.jar"
         jar="/home/vetal/android/android-studio/sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
         jumboMode="false"

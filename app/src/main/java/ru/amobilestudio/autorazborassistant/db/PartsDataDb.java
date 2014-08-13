@@ -51,8 +51,6 @@ public class PartsDataDb extends DbSQLiteHelper {
     public Cursor fetchAllReservedParts(int userId){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        //Cursor c = db.query(TABLE_NAME_PARTS, new String[] {BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_CREATE_DATE},
-        //        null, null, null, null, null);
         String[] select = new String[] { BaseColumns._ID, COLUMN_PART_ID, COLUMN_PART_NAME, COLUMN_PART_CREATE_DATE };
         Cursor c = db.query(TABLE_NAME_PARTS, select, COLUMN_PART_USER_ID + "=? AND " +
                 COLUMN_PART_STATUS + "=" + STATUS_RESERVE_DEVICE, new String[] { userId + "" }, null, null, null, null);
@@ -67,11 +65,8 @@ public class PartsDataDb extends DbSQLiteHelper {
     public Cursor fetchAllNoReserved(int userId){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?)";
-        String[] params = new String[] {userId + "", STATE_ALLOW_SYNC + "", STATE_ERROR_SYNC + ""};
-
-        /*String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATUS + "!=?";
-        String[] params = new String[] {userId + "", STATUS_RESERVE_DEVICE + ""};*/
+        String whereClause = COLUMN_PART_USER_ID + "=? AND " + COLUMN_PART_STATE + " in (?, ?, ?)";
+        String[] params = new String[] {userId + "", STATE_ALLOW_SYNC + "", STATE_ERROR_SYNC + "", STATE_START_SYNC + ""};
 
         Cursor c = db.query(TABLE_NAME_PARTS, getAllColumns(), whereClause, params, null, null, null, null);
 
@@ -154,8 +149,12 @@ public class PartsDataDb extends DbSQLiteHelper {
         Cursor cursor = db.query(TABLE_NAME_PARTS, select, COLUMN_PART_ID + "=?",
                 params, null, null, null, null);
         //Cursor cursor = db.rawQuery("select 1 from " + TABLE_NAME_PARTS +" where " + COLUMN_PART_ID + "=?", new String[] { ID });
+        if(cursor != null)
+            cursor.moveToFirst();
+
         boolean exists = (cursor.getCount() > 0);
 
+        //get update time
         String newUpdateDate = cv.getAsString(COLUMN_PART_UPDATE_DATE);
         long newUpdateTime = 0;
         if(newUpdateDate != null && !newUpdateDate.equals("") && !newUpdateDate.equals("null")) {
@@ -167,19 +166,35 @@ public class PartsDataDb extends DbSQLiteHelper {
             }
         }
 
+        ActivityHelper.debug(partId + " id / exists " + exists);
+
         //if exist update else add to Db
-        if(exists && cursor.moveToFirst()){
+        if(exists){
             long oldUpdatetime = cursor.getLong(cursor.getColumnIndex(COLUMN_PART_UPDATE_DATE));
-            ActivityHelper.debug("old - " + oldUpdatetime + " new - " + newUpdateTime);
+
             if (newUpdateTime > 0 && newUpdateTime > oldUpdatetime){
                 cv.put(COLUMN_PART_UPDATE_DATE, newUpdateTime);
             }else
                 cv.put(COLUMN_PART_UPDATE_DATE, oldUpdatetime);
-            db.update(TABLE_NAME_PARTS, cv, COLUMN_PART_ID + "=?", new String[]{ partId });
+
+            //if reserve from server
+            int status = cv.getAsInteger(COLUMN_PART_STATUS);
+            if(status == STATUS_RESERVE_DEVICE)
+                cv.put(COLUMN_PART_STATE, STATE_NO_SYNC);
+
+            db.update(TABLE_NAME_PARTS, cv, BaseColumns._ID + "=?", new String[]{
+                    cursor.getLong(cursor.getColumnIndex(BaseColumns._ID)) + "" });
         }else{
             try {
                 Date d = dateFormat.parse(cv.getAsString(COLUMN_PART_CREATE_DATE));
-                cv.put(COLUMN_PART_STATE, STATE_SUCCESS_SYNC);
+
+                //if reserve from server
+                int status = cv.getAsInteger(COLUMN_PART_STATUS);
+                if(status == STATUS_RESERVE_DEVICE)
+                    cv.put(COLUMN_PART_STATE, STATE_NO_SYNC);
+                else
+                    cv.put(COLUMN_PART_STATE, STATE_SUCCESS_SYNC);
+
                 cv.put(COLUMN_PART_CREATE_DATE, d.getTime());
                 db.insert(TABLE_NAME_PARTS, null, cv);
             } catch (ParseException e) {

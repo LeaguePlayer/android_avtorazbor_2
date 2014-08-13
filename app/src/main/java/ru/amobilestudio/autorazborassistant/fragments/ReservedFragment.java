@@ -157,10 +157,11 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         builder.show();
     }
 
-    private void updateList(){
+    public void updateList(){
         _cursorAdapter.swapCursor(_partsDataDb.fetchAllReservedParts(UserInfoHelper.getUserId(getActivity())));
-        _listView.scrollTo(0, 0);
         _listView.invalidateViews();
+        getActivity().getActionBar().getTabAt(0).setText(getString(R.string.tab1) +
+                " (" + _cursorAdapter.getCount() +")");
     }
 
     @Override

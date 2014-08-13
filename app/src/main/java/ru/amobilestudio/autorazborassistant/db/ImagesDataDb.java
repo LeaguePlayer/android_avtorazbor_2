@@ -14,6 +14,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import ru.amobilestudio.autorazborassistant.app.R;
 
 /**
  * Created by vetal on 14.06.14.
@@ -24,9 +27,20 @@ public class ImagesDataDb extends DbSQLiteHelper {
     public static final int STATE_START_SYNC = 2;
     public static final int STATE_SUCCESS_SYNC = 3;
     public static final int STATE_ALLOW_SYNC = 4;
+    public static final int STATE_ERROR_SYNC = 5;
+
+    public HashMap<Integer, String> states;
 
     public ImagesDataDb(Context context) {
         super(context);
+
+        states = new HashMap<Integer, String>();
+
+        states.put(STATE_NO_SYNC, context.getString(R.string.state_no_sync));
+        states.put(STATE_START_SYNC, context.getString(R.string.state_start_sync));
+        states.put(STATE_SUCCESS_SYNC, context.getString(R.string.state_success_sync));
+        states.put(STATE_ALLOW_SYNC, context.getString(R.string.state_allow_sync));
+        states.put(STATE_ERROR_SYNC, context.getString(R.string.state_error_sync));
     }
 
     public void add(long part_id, String path){
@@ -79,6 +93,19 @@ public class ImagesDataDb extends DbSQLiteHelper {
         return c;
     }
 
+    public Cursor fetchReadyToSyncImages(long part_id){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.query(TABLE_NAME_IMAGES, new String[] { BaseColumns._ID, COLUMN_IMAGES_PART_ID, COLUMN_IMAGES_PATH, COLUMN_IMAGES_STATE },
+                COLUMN_IMAGES_PART_ID + "=? AND " + COLUMN_IMAGES_STATE + " in (?, ?)",
+                new String[] { part_id + "", STATE_ALLOW_SYNC + "", STATE_ERROR_SYNC + "" }, null, null, null, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        return c;
+    }
+
     public int getCount(long part_id){
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -89,6 +116,17 @@ public class ImagesDataDb extends DbSQLiteHelper {
             return c.getCount();
 
         return 0;
+    }
+
+    public void setState(long id, int state){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        if(id > 0 && states.containsKey(state)){
+            ContentValues cv = new ContentValues();
+            cv.put(COLUMN_IMAGES_STATE, state);
+
+            db.update(TABLE_NAME_IMAGES, cv, BaseColumns._ID + "=?", new String[] { id + "" });
+        }
     }
 
     public ArrayList<Image> fetchListImages(long part_id){

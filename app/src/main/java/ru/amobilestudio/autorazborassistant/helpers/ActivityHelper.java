@@ -14,7 +14,7 @@ import android.view.WindowManager;
 public class ActivityHelper {
 
     static final public boolean DEBUG_MODE = true;
-    static final public String HOST = DEBUG_MODE ? "http://192.168.0.102:2000/" : "http://razbor.amobile2.tmweb.ru/";
+    static final public String HOST = DEBUG_MODE ? "http://192.168.0.100:2000/" : "http://razbor.amobile2.tmweb.ru/";
 //    static final public String HOST = DEBUG_MODE ? "http://10.0.3.2:2000/" : "http://razbor.amobile2.tmweb.ru/";
     static final public String TAG = "razbor";
 

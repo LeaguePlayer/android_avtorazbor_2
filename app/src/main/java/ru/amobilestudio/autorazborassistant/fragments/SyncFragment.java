@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -30,8 +29,6 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     private PartsSyncCursorAdapter _cursorAdapter;
     private PartsDataDb _partsDataDb;
     private ListView _listView;
-
-    private int _interval = 30 * 1000; //30 seconds
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,16 +81,6 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     public void onResume() {
         super.onResume();
         updateList();
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //Do something after 100ms
-                updateList();
-                handler.postDelayed(this, _interval);
-            }
-        }, _interval);
     }
 
     @Override
@@ -104,6 +91,8 @@ public class SyncFragment extends ListFragment implements LoaderManager.LoaderCa
     public void updateList(){
         _cursorAdapter.swapCursor(_partsDataDb.fetchForSyncParts(UserInfoHelper.getUserId(getActivity())));
         _listView.invalidateViews();
+        getActivity().getActionBar().getTabAt(1).setText(getString(R.string.tab2) +
+                " (" + _cursorAdapter.getCount() +")");
     }
 
     static class SyncPartsCursorLoader extends CursorLoader {

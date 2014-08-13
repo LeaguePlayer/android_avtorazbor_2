@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 
 import ru.amobilestudio.autorazborassistant.asyncs.GetAllPartsAsync;
 import ru.amobilestudio.autorazborassistant.asyncs.GetSelectsDataAsync;
+import ru.amobilestudio.autorazborassistant.asyncs.OnTaskCompleted;
 import ru.amobilestudio.autorazborassistant.fragments.ReservedFragment;
 import ru.amobilestudio.autorazborassistant.fragments.SyncFragment;
 import ru.amobilestudio.autorazborassistant.helpers.ConnectionHelper;
@@ -29,13 +30,15 @@ import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
 import ru.amobilestudio.autorazborassistant.receivers.NetworkChangeReceiver;
 
 
-public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
+public class MainActivity extends FragmentActivity implements ActionBar.TabListener, OnTaskCompleted {
 
     private NetworkChangeReceiver _networkChangeReceiver;
 
     public AppSectionsPagerAdapter mAppSectionsPagerAdapter;
 
-    ViewPager mViewPager;
+    private ViewPager _viewPager;
+
+    final private OnTaskCompleted _taskCompleted = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +71,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mAppSectionsPagerAdapter);
+        _viewPager = (ViewPager) findViewById(R.id.pager);
+        _viewPager.setAdapter(mAppSectionsPagerAdapter);
 
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        _viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 actionBar.setSelectedNavigationItem(position);
@@ -122,13 +125,39 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 break;
             case R.id.action_sync:
                 if(ConnectionHelper.checkNetworkConnection(this)){
-                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(this);
+                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(this, _taskCompleted);
                     allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //when all parts uploads than update fragments lists
+    @Override
+    public void onTaskCompleted() {
+        FragmentPagerAdapter fragmentPagerAdapter = (FragmentPagerAdapter) _viewPager.getAdapter();
+
+        String reserveFragmentName = makeFragmentName(_viewPager.getId(), 0);
+        String syncFragmentName = makeFragmentName(_viewPager.getId(), 1);
+
+        Fragment reservedFragment = getSupportFragmentManager().findFragmentByTag(reserveFragmentName);
+        Fragment syncFragment = getSupportFragmentManager().findFragmentByTag(syncFragmentName);
+
+        if(reservedFragment != null && syncFragment != null &&
+                reservedFragment.isResumed() && syncFragment.isResumed()){
+            ((ReservedFragment) reservedFragment).updateList();
+            ((SyncFragment) syncFragment).updateList();
+        }
+    }
+
+    public ViewPager getViewPager(){
+        return _viewPager;
+    }
+
+    private static String makeFragmentName(int viewId, int index) {
+        return "android:switcher:" + viewId + ":" + index;
     }
 
     public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
@@ -155,7 +184,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-        mViewPager.setCurrentItem(tab.getPosition());
+        _viewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
