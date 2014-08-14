@@ -11,6 +11,7 @@ import android.provider.BaseColumns;
 import android.provider.MediaStore;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -149,7 +150,7 @@ public class ImagesDataDb extends DbSQLiteHelper {
         return list;
     }
 
-    static public class Image{
+    static public class Image implements Serializable{
         private long _id;
         private String _uri;
         private int _state;

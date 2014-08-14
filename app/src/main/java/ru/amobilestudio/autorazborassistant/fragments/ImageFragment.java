@@ -1,6 +1,5 @@
 package ru.amobilestudio.autorazborassistant.fragments;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -28,11 +27,13 @@ import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 public class ImageFragment extends Fragment {
 
     private ImagesDataDb.Image _image;
-    private Context _context;
 
-    public ImageFragment(Context context, ImagesDataDb.Image image) {
-        _image = image;
-        _context = context;
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+
+        _image = (ImagesDataDb.Image) args.getSerializable("image");
     }
 
     @Override

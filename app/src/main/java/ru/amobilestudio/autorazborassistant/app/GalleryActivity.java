@@ -86,7 +86,13 @@ public class GalleryActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return new ImageFragment(getApplicationContext(), _list.get(position));
+            ImageFragment imageFragment = new ImageFragment();
+
+            Bundle args = new Bundle();
+            args.putSerializable("image", _list.get(position));
+            imageFragment.setArguments(args);
+
+            return imageFragment;
         }
 
         @Override
