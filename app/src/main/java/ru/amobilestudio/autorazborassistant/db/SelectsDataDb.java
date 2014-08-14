@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 /**
  * Created by vetal on 09.06.14.
@@ -29,26 +30,14 @@ public class SelectsDataDb extends DbSQLiteHelper{
         return c;
     }
 
-    /*public ArrayList<Item> getAll(String tableName, boolean withEmpty){
-        ArrayList<Item> items = new ArrayList<Item>();
+    public Cursor findStr(String tableName, String query){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor c = db.rawQuery("SELECT * FROM " + tableName, null);
+        Cursor c = db.query(tableName, new String[] {BaseColumns._ID, COLUMN_ID_VALUE, COLUMN_NAME_VALUE}, COLUMN_NAME_VALUE + " LIKE ?",
+                new String[] { "%" + query + "%" }, null, null, null, null);
 
-        if(c.moveToFirst()){
-            if(withEmpty)
-                items.add(new Item(0, _context.getString(R.string.empty_item)));
-            while (!c.isAfterLast()){
-                Item item = new Item(
-                        c.getInt(c.getColumnIndex(COLUMN_ID_VALUE)),
-                        c.getString(c.getColumnIndex(COLUMN_NAME_VALUE))
-                );
-                items.add(item);
-                c.moveToNext();
-            }
-        }
-        return items;
-    }*/
+        return c;
+    }
 
     public void addItem(String tableName, ContentValues cv){
         SQLiteDatabase db = this.getWritableDatabase();

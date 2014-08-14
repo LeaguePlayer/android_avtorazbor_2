@@ -113,7 +113,7 @@ public class ImageFragment extends Fragment {
         return BitmapFactory.decodeFile(pathFile, options);
     }
 
-    private static int exifToDegrees(int exifOrientation) {
+    public static int exifToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) { return 90; }
         else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {  return 180; }
         else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {  return 270; }

@@ -2,7 +2,7 @@ package ru.amobilestudio.autorazborassistant.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.view.LayoutInflater;
+import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 
 import ru.amobilestudio.autorazborassistant.db.SelectsDataDb;
@@ -12,11 +12,21 @@ import ru.amobilestudio.autorazborassistant.db.SelectsDataDb;
  */
 public class SelectsCursorAdapter extends SimpleCursorAdapter{
 
-    private Context _context;
-    private LayoutInflater _layoutInflater;
+    private SelectsDataDb _selectsDataDb;
+    private String _tableName;
 
-    public SelectsCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+    public SelectsCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags, String tableName) {
         super(context, layout, c, from, to, flags);
+
+        _selectsDataDb = new SelectsDataDb(context);
+        _tableName = tableName;
+
+        this.setFilterQueryProvider(new FilterQueryProvider() {
+            @Override
+            public Cursor runQuery(CharSequence charSequence) {
+                return _selectsDataDb.findStr(_tableName, charSequence.toString());
+            }
+        });
     }
 
     @Override

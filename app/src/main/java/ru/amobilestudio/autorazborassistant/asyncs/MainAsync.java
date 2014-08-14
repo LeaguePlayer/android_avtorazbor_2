@@ -2,12 +2,14 @@ package ru.amobilestudio.autorazborassistant.asyncs;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
 import android.util.JsonReader;
-import android.util.Log;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -23,6 +25,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,6 +42,7 @@ import ru.amobilestudio.autorazborassistant.app.MainActivity;
 import ru.amobilestudio.autorazborassistant.app.R;
 import ru.amobilestudio.autorazborassistant.db.ImagesDataDb;
 import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
+import ru.amobilestudio.autorazborassistant.fragments.ImageFragment;
 import ru.amobilestudio.autorazborassistant.fragments.SyncFragment;
 import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 import ru.amobilestudio.autorazborassistant.helpers.UserInfoHelper;
@@ -74,9 +78,7 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
 
             if(_cursor != null && _cursor.moveToFirst()){
                 do {
-                    Log.d(ActivityHelper.TAG, "part name = " + _cursor.getString(_cursor.getColumnIndex(PartsDataDb.COLUMN_PART_NAME)));
                     sendAndSavePart(_cursor);
-                    //this.isCancelled();
                 } while (_cursor.moveToNext());
             }
             ActivityHelper.debug("end iteration");
@@ -269,9 +271,8 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
     }
 
     private boolean sendPartImages(long partId, long webId){
-        _imagesCursor = _imagesDataDb.fetchReadyToSyncImages(partId);
 
-        ActivityHelper.debug("count image " + _imagesCursor.getCount());
+        _imagesCursor = _imagesDataDb.fetchReadyToSyncImages(partId);
         if(_imagesCursor.getCount() == 0)
             return true;
 
@@ -289,7 +290,7 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
                     URI uri = new URI(Uri.parse(_imagesCursor.getString(_imagesCursor.getColumnIndex(ImagesDataDb.COLUMN_IMAGES_PATH))).toString());
                     File image = new File(uri);
 
-                    ActivityHelper.debug("image for send" + image.getAbsolutePath());
+                    image = rotateAndResizeImage(image);
 
                     FileBody fb = new FileBody(image);
                     builder.addPart("Image", fb);
@@ -343,6 +344,39 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
         }
 
         return false;
+    }
+
+    private File rotateAndResizeImage(File image){
+        File newFile = new File(image.getPath());
+
+        Bitmap bitmap = ImageFragment.decodeSampledBitmapFromResource(image.getPath(), 1200, 800);
+
+        //rotate image
+        try {
+            ExifInterface exif = new ExifInterface(image.getPath());
+            int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+
+            int rotationInDegrees = ImageFragment.exifToDegrees(rotation);
+            Matrix matrix = new Matrix();
+            if (rotation != 0f) {matrix.preRotate(rotationInDegrees);}
+
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+            FileOutputStream fOut = new FileOutputStream(newFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fOut);
+
+            fOut.flush();
+            fOut.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(newFile != null)
+            return newFile;
+
+        return image;
     }
 
     private void saveImageState(Cursor c){

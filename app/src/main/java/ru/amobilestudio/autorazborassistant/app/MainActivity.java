@@ -2,6 +2,7 @@ package ru.amobilestudio.autorazborassistant.app;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -129,6 +130,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                     allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 break;
+            case R.id.action_logout_user:
+                logOut();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -137,8 +141,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     //when all parts uploads than update fragments lists
     @Override
     public void onTaskCompleted() {
-        FragmentPagerAdapter fragmentPagerAdapter = (FragmentPagerAdapter) _viewPager.getAdapter();
-
         String reserveFragmentName = makeFragmentName(_viewPager.getId(), 0);
         String syncFragmentName = makeFragmentName(_viewPager.getId(), 1);
 
@@ -195,5 +197,16 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 
+    }
+
+    private void logOut(){
+        UserInfoHelper.logoutUser(this);
+
+        finish();
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

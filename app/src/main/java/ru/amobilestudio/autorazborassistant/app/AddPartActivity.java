@@ -40,7 +40,6 @@ import ru.amobilestudio.autorazborassistant.db.PartsDataDb;
 import ru.amobilestudio.autorazborassistant.db.SelectsDataDb;
 import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 import ru.amobilestudio.autorazborassistant.helpers.AlertDialogHelper;
-import ru.amobilestudio.autorazborassistant.helpers.ConnectionHelper;
 
 
 public class AddPartActivity extends ActionBarActivity implements View.OnClickListener {
@@ -113,7 +112,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //categories
         Cursor c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CATEGORIES);
-        SelectsCursorAdapter cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        SelectsCursorAdapter cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_CATEGORIES);
         _partsCategoryId = (MyAutoComplete) findViewById(R.id.parts_category_id);
         _partsCategoryId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -130,7 +129,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //car models
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CAR_MODELS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_CAR_MODELS);
         _partsCarModelId = (MyAutoComplete) findViewById(R.id.parts_car_model_id);
         _partsCarModelId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -147,7 +146,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //locations
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_LOCATIONS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_LOCATIONS);
         _partsLocationId = (MyAutoComplete) findViewById(R.id.parts_location_id);
         _partsLocationId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -164,7 +163,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //suppliers
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_SUPPLIERS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_SUPPLIERS);
         _partsSupplierId = (MyAutoComplete) findViewById(R.id.parts_supplier_id);
         _partsSupplierId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -181,7 +180,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
         //bu
         c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_BU_CARS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0);
+        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_BU_CARS);
         _partsBuId = (MyAutoComplete) findViewById(R.id.parts_bu_id);
         _partsBuId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -204,18 +203,10 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         _publishButton = (Button) findViewById(R.id.publish_part_button);
         _publishButton.setOnClickListener(this);
 
-        //setSelectsField(this);
-
         //when click on item ListView
         Bundle extras = getIntent().getExtras();
 
-        if(extras == null){
-            //check connection
-            if(ConnectionHelper.checkNetworkConnection(this)){
-//                CreatePartAsync createPartAsync = new CreatePartAsync(this);
-//                createPartAsync.execute();
-            }
-        }else{
+        if(extras != null){
             _part_id = extras.getLong("part_id");
 
             SharedPreferences part_info = getSharedPreferences(DbSQLiteHelper.DB_PREFS, Context.MODE_PRIVATE);

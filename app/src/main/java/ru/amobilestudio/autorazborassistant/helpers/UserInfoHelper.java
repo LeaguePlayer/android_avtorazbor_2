@@ -26,10 +26,17 @@ public class UserInfoHelper {
         editor.putBoolean("isLogin", true);
 
         editor.commit();
+    }
 
-                /*//Create date login
-                Date login_date = new Date();
-                editor.putLong("login_date", login_date.getTime());*/
+    public static void logoutUser(Context context){
+        SharedPreferences settings = context.getSharedPreferences(USER_INFO_PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+
+        editor.putInt("user_id", 0);
+        editor.putString("user_fio", "");
+        editor.putBoolean("isLogin", false);
+
+        editor.commit();
     }
 
     public static String getUserFio(Context context){

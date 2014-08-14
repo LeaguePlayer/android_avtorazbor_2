@@ -20,8 +20,9 @@
     <!--<string name="hello_message2">Выберите дальнейшее действие в меню.</string>-->
 
     <!--Menu Actions-->
-    <string name="action_add_part">Добавить деталь</string>
+    <string name="action_add_part">Выгрузить детали</string>
     <string name="action_update_data">Обновить данные</string>
+    <string name="action_logout_user">Выйти</string>
 
     <!--for user actions-->
     <string name="alert_title">Внимание</string>

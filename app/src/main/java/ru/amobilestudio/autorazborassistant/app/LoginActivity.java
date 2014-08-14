@@ -59,11 +59,13 @@ public class LoginActivity extends ActionBarActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.login_send:
-                if(validateLoginForm() && ConnectionHelper.checkNetworkConnection(this)){
-                    LoginAsync loginAsync = new LoginAsync(this);
-                    loginAsync.execute(loginInput.getText().toString(), passInput.getText().toString());
-                }else
-                    AlertDialogHelper.showAlertDialog(this, getString(R.string.error_title), TextUtils.join("\n", _errors), true);
+                if(ConnectionHelper.checkNetworkConnection(this)){
+                    if(validateLoginForm()){
+                        LoginAsync loginAsync = new LoginAsync(this);
+                        loginAsync.execute(loginInput.getText().toString(), passInput.getText().toString());
+                    }else
+                        AlertDialogHelper.showAlertDialog(this, getString(R.string.error_title), TextUtils.join("\n", _errors), true);
+                }
                 break;
         }
     }
