@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import java.util.ArrayList;
+
 /**
  * Created by vetal on 09.06.14.
  */
@@ -28,6 +30,22 @@ public class SelectsDataDb extends DbSQLiteHelper{
             c.moveToFirst();
 
         return c;
+    }
+
+    public ArrayList<Item> fetchAllItems(String tableName){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.rawQuery("SELECT * FROM " + tableName, null);
+
+        ArrayList<Item> result = new ArrayList<Item>();
+
+        if(c.moveToFirst()){
+            do{
+                result.add(new Item(c.getInt(c.getColumnIndex(COLUMN_ID_VALUE)), c.getString(c.getColumnIndex(COLUMN_NAME_VALUE))));
+            }while(c.moveToNext());
+        }
+
+        return result;
     }
 
     public Cursor findStr(String tableName, String query){

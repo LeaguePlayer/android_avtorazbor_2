@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -32,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.amobilestudio.autorazborassistant.adapters.SelectsCursorAdapter;
 import ru.amobilestudio.autorazborassistant.custom.MyAutoComplete;
 import ru.amobilestudio.autorazborassistant.db.DbSQLiteHelper;
 import ru.amobilestudio.autorazborassistant.db.ImagesDataDb;
@@ -111,8 +111,8 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         int[] to = new int[] { android.R.id.text1 };
 
         //categories
-        Cursor c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CATEGORIES);
-        SelectsCursorAdapter cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_CATEGORIES);
+        ArrayList<SelectsDataDb.Item> allItems = selectsDataDb.fetchAllItems(SelectsDataDb.TABLE_NAME_CATEGORIES);
+        ArrayAdapter<SelectsDataDb.Item> arrayAdapter = new ArrayAdapter<SelectsDataDb.Item>(this, android.R.layout.simple_dropdown_item_1line, allItems);
         _partsCategoryId = (MyAutoComplete) findViewById(R.id.parts_category_id);
         _partsCategoryId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -125,11 +125,11 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         });
         _partsCategoryId.setOnFocusChangeListener(focusChangeListener);
-        _partsCategoryId.setAdapter(cursorAdapter);
+        _partsCategoryId.setAdapter(arrayAdapter);
 
         //car models
-        c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_CAR_MODELS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_CAR_MODELS);
+        allItems = selectsDataDb.fetchAllItems(SelectsDataDb.TABLE_NAME_CAR_MODELS);
+        arrayAdapter = new ArrayAdapter<SelectsDataDb.Item>(this, android.R.layout.simple_dropdown_item_1line, allItems);
         _partsCarModelId = (MyAutoComplete) findViewById(R.id.parts_car_model_id);
         _partsCarModelId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -142,11 +142,11 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         });
         _partsCarModelId.setOnFocusChangeListener(focusChangeListener);
-        _partsCarModelId.setAdapter(cursorAdapter);
+        _partsCarModelId.setAdapter(arrayAdapter);
 
         //locations
-        c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_LOCATIONS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_LOCATIONS);
+        allItems = selectsDataDb.fetchAllItems(SelectsDataDb.TABLE_NAME_LOCATIONS);
+        arrayAdapter = new ArrayAdapter<SelectsDataDb.Item>(this, android.R.layout.simple_dropdown_item_1line, allItems);
         _partsLocationId = (MyAutoComplete) findViewById(R.id.parts_location_id);
         _partsLocationId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -159,11 +159,11 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         });
         _partsLocationId.setOnFocusChangeListener(focusChangeListener);
-        _partsLocationId.setAdapter(cursorAdapter);
+        _partsLocationId.setAdapter(arrayAdapter);
 
         //suppliers
-        c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_SUPPLIERS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_SUPPLIERS);
+        allItems = selectsDataDb.fetchAllItems(SelectsDataDb.TABLE_NAME_SUPPLIERS);
+        arrayAdapter = new ArrayAdapter<SelectsDataDb.Item>(this, android.R.layout.simple_dropdown_item_1line, allItems);
         _partsSupplierId = (MyAutoComplete) findViewById(R.id.parts_supplier_id);
         _partsSupplierId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -176,11 +176,11 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         });
         _partsSupplierId.setOnFocusChangeListener(focusChangeListener);
-        _partsSupplierId.setAdapter(cursorAdapter);
+        _partsSupplierId.setAdapter(arrayAdapter);
 
         //bu
-        c = selectsDataDb.fetchAll(SelectsDataDb.TABLE_NAME_BU_CARS);
-        cursorAdapter = new SelectsCursorAdapter(this, android.R.layout.simple_dropdown_item_1line, c, from, to, 0, SelectsDataDb.TABLE_NAME_BU_CARS);
+        allItems = selectsDataDb.fetchAllItems(SelectsDataDb.TABLE_NAME_BU_CARS);
+        arrayAdapter = new ArrayAdapter<SelectsDataDb.Item>(this, android.R.layout.simple_dropdown_item_1line, allItems);
         _partsBuId = (MyAutoComplete) findViewById(R.id.parts_bu_id);
         _partsBuId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -193,7 +193,7 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
             }
         });
         _partsBuId.setOnFocusChangeListener(focusChangeListener);
-        _partsBuId.setAdapter(cursorAdapter);
+        _partsBuId.setAdapter(arrayAdapter);
 
         /*------------Selects end--------------*/
 
