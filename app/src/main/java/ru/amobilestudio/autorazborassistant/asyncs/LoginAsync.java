@@ -139,6 +139,8 @@ public class LoginAsync extends AsyncTask<String, Void, Void> {
             UserInfoHelper.rememberUser(_context, _user_id, _user_fio);
 
             Intent intent = new Intent(_context, MainActivity.class);
+            intent.putExtra("from_login", 1);
+
             _context.startActivity(intent);
         }else
             AlertDialogHelper.showAlertDialog(_context, _context.getString(R.string.error_title), TextUtils.join("\n", _errors), true);

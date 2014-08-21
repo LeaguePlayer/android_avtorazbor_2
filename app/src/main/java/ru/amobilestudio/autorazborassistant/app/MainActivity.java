@@ -1,12 +1,16 @@
 package ru.amobilestudio.autorazborassistant.app;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -40,6 +44,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private ViewPager _viewPager;
 
     final private OnTaskCompleted _taskCompleted = this;
+    final private Context _context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +113,25 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = getIntent();
+                int isFromLogin = intent.getIntExtra("from_login", 0);
+
+                if(isFromLogin == 1){
+                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(_context, _taskCompleted);
+                    allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            }
+        }, 2000);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
@@ -126,8 +150,28 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 break;
             case R.id.action_sync:
                 if(ConnectionHelper.checkNetworkConnection(this)){
-                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(this, _taskCompleted);
-                    allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle(getString(R.string.attention_title));
+                    builder.setMessage(getString(R.string.sync_message));
+
+                    // Set up the buttons
+                    builder.setPositiveButton(getString(R.string.confirm_text), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                            GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(_context, _taskCompleted);
+                            allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+                    });
+
+                    builder.setNegativeButton(getString(R.string.confirm_cancel), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
                 }
                 break;
             case R.id.action_logout_user:

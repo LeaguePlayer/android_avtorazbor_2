@@ -17,6 +17,7 @@
     <string name="empty_item">Не выбрано</string>
     <string name="hello_message">Вы авторизованны под именем:</string>
     <string name="empty_text">Список пуст</string>
+    <string name="sync_message">Синхронизировать резервированные детали?</string>
     <!--<string name="hello_message2">Выберите дальнейшее действие в меню.</string>-->
 
     <!--Menu Actions-->
