@@ -1,6 +1,7 @@
 package ru.amobilestudio.autorazborassistant.app;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 
 import java.util.ArrayList;
 
+import ru.amobilestudio.autorazborassistant.asyncs.GetSelectsDataAsync;
 import ru.amobilestudio.autorazborassistant.asyncs.LoginAsync;
 import ru.amobilestudio.autorazborassistant.helpers.ActivityHelper;
 import ru.amobilestudio.autorazborassistant.helpers.AlertDialogHelper;
@@ -44,6 +46,11 @@ public class LoginActivity extends ActionBarActivity implements View.OnClickList
         sendButton = (Button) findViewById(R.id.login_send);
 
         sendButton.setOnClickListener(this);
+
+        if(ConnectionHelper.checkNetworkConnection(this)){
+            GetSelectsDataAsync dataAsync = new GetSelectsDataAsync(this);
+            dataAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @Override

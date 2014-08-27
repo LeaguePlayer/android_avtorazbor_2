@@ -91,6 +91,13 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         _partsPriceBuy = (EditText) findViewById(R.id.parts_price_buy);
         _partsComment = (EditText) findViewById(R.id.parts_comment);
 
+        /*_partsComment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                ActivityHelper.debug("focus textarea");
+            }
+        });*/
+
         /*------------Selects INIT--------------*/
 
         //focus listener

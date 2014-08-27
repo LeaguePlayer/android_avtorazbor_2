@@ -96,7 +96,7 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
                     break;
                 case R.id.plusOther:
                     showDialogWithInput(getActivity());
-                    return;
+                    break;
             }
         }
     }

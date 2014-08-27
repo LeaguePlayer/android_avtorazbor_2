@@ -46,6 +46,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     final private OnTaskCompleted _taskCompleted = this;
     final private Context _context = this;
 
+//    private boolean isUpdateReserve = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +92,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         //add tabs
         actionBar.addTab(actionBar.newTab().setText(getString(R.string.tab1)).setTabListener(this));
         actionBar.addTab(actionBar.newTab().setText(getString(R.string.tab2)).setTabListener(this));
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = getIntent();
+                int isFromLogin = intent.getIntExtra("from_login", 0);
+
+                if(isFromLogin == 1){
+                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(_context, _taskCompleted);
+                    allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            }
+        }, 2000);
     }
 
     private void getOverflowMenu() {
@@ -115,20 +131,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     @Override
     protected void onResume() {
         super.onResume();
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = getIntent();
-                int isFromLogin = intent.getIntExtra("from_login", 0);
-
-                if(isFromLogin == 1){
-                    GetAllPartsAsync allPartsAsync = new GetAllPartsAsync(_context, _taskCompleted);
-                    allPartsAsync.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-            }
-        }, 2000);
     }
 
     @Override

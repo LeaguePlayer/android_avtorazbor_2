@@ -164,8 +164,7 @@
                     android:id="@+id/parts_comment"
                     android:lines="4"
                     android:gravity="left|top"
-                    android:textSize="14sp"
-                    android:textIsSelectable="true" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
