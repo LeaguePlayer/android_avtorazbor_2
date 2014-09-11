@@ -60,7 +60,6 @@ public class GetAllPartsAsync extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
-
         String url = ActivityHelper.HOST + "api/allParts?user_id=" + UserInfoHelper.getUserId(_context);
 
         try {

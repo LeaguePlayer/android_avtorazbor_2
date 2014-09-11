@@ -13,7 +13,7 @@ import android.provider.BaseColumns;
 public class DbSQLiteHelper extends SQLiteOpenHelper {
     private Context _context;
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "AutoAssistant.db";
 
     public static final String DB_PREFS = "DbPrefsFile";

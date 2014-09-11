@@ -210,6 +210,9 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         _publishButton = (Button) findViewById(R.id.publish_part_button);
         _publishButton.setOnClickListener(this);
 
+        _takePhoto = (Button) findViewById(R.id.make_photo);
+        _takePhoto.setOnClickListener(this);
+
         //when click on item ListView
         Bundle extras = getIntent().getExtras();
 
@@ -224,6 +227,20 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
             setPartForm(_part_id);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        _partsPriceSell.clearFocus();
+        _partsPriceBuy.clearFocus();
+        _partsComment.clearFocus();
+
+        _partsCategoryId.clearFocus();
+        _partsCarModelId.clearFocus();
+        _partsLocationId.clearFocus();
+        _partsSupplierId.clearFocus();
+        _partsBuId.clearFocus();
     }
 
     private void getOverflowMenu() {
@@ -303,9 +320,9 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()){
-            case R.id.take_photo:
+            /*case R.id.ma_photo:
                 takePhoto();
-                break;
+                break;*/
             case R.id.view_gallery:
                 if(_imagesDataDb.getCount(_part_id) > 0){
                     Intent intent = new Intent(this, GalleryActivity.class);
@@ -322,9 +339,10 @@ public class AddPartActivity extends ActionBarActivity implements View.OnClickLi
 
     @Override
     public void onClick(View view) {
-
         switch (view.getId()){
-
+            case R.id.make_photo:
+                takePhoto();
+                break;
             case R.id.save_part_button:
                 savePart(false);
                 break;

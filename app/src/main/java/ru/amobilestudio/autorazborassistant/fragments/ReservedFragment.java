@@ -64,6 +64,15 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         _listView.setOnItemClickListener(this);
         _listView.setAdapter(_cursorAdapter);
 
+        //set long click
+        /*_listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ActivityHelper.debug("i = " + i + "; l = " + l);
+                return false;
+            }
+        });*/
+
         getLoaderManager().initLoader(0, null, this);
 
         Button button = (Button) getView().findViewById(R.id.plus10);
@@ -78,6 +87,11 @@ public class ReservedFragment extends ListFragment implements View.OnClickListen
         button = (Button) getView().findViewById(R.id.plusOther);
         button.setOnClickListener(this);
     }
+
+    /*@Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }*/
 
     @Override
     public void onClick(View view) {

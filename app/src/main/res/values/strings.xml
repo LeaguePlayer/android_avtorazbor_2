@@ -24,6 +24,7 @@
     <string name="action_add_part">Выгрузить детали</string>
     <string name="action_update_data">Обновить данные</string>
     <string name="action_logout_user">Выйти</string>
+    <string name="action_delete_list_item">Удалить</string>
 
     <!--for user actions-->
     <string name="alert_title">Внимание</string>

@@ -104,12 +104,17 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
 
-        MainActivity mainActivity = (MainActivity) _context;
-        Fragment page = mainActivity.getSupportFragmentManager().findFragmentByTag(
-                "android:switcher:" + R.id.pager + ":" + mainActivity.getViewPager().getCurrentItem());
+        String activityName = ActivityHelper.getActivityName(_context);
 
-        if(page != null){
-            if(mainActivity.getViewPager().getCurrentItem() == 1) ((SyncFragment) page).updateList();
+        //update list fragments
+        if(activityName.indexOf("MainActivity") > 0){
+            MainActivity mainActivity = (MainActivity) _context;
+            Fragment page = mainActivity.getSupportFragmentManager().findFragmentByTag(
+                    "android:switcher:" + R.id.pager + ":" + mainActivity.getViewPager().getCurrentItem());
+
+            if(page != null){
+                if(mainActivity.getViewPager().getCurrentItem() == 1) ((SyncFragment) page).updateList();
+            }
         }
     }
 
@@ -163,11 +168,11 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             //create_time
-            val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_CREATE_DATE));
+            /*val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_CREATE_DATE));
             if(val != 0){
                 Date date = new Date(val);
                 nameValuePairs.add(new BasicNameValuePair("Part[create_time]", dateFormat.format(date)));
-            }
+            }*/
 
             //update_time
             val = c.getLong(c.getColumnIndex(PartsDataDb.COLUMN_PART_UPDATE_DATE));
@@ -212,6 +217,12 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
                                 }
                                 reader.endArray();
                             }else if(field_name.equals("price_buy")){
+                                reader.beginArray();
+                                while (reader.hasNext()){
+                                    _errors.put(field_name, reader.nextString());
+                                }
+                                reader.endArray();
+                            }else if(field_name.equals("part")){
                                 reader.beginArray();
                                 while (reader.hasNext()){
                                     _errors.put(field_name, reader.nextString());
@@ -321,29 +332,34 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
                     }
                     reader.endObject();
 
+                    ActivityHelper.debug(_errors.toString());
+
                     if(_errors.isEmpty()){
                         _imagesDataDb.setState(_imagesCursor.getLong(_imagesCursor.getColumnIndex(BaseColumns._ID)),
                                 ImagesDataDb.STATE_SUCCESS_SYNC);
-                        return true;
                     }else{
                         _imagesDataDb.setState(_imagesCursor.getLong(_imagesCursor.getColumnIndex(BaseColumns._ID)),
                                 ImagesDataDb.STATE_ERROR_SYNC);
+                        return false;
                     }
 
                 }catch (URISyntaxException e) {
                     e.printStackTrace();
                     saveImageState(_imagesCursor);
+                    return false;
                 } catch (ClientProtocolException e) {
                     e.printStackTrace();
                     saveImageState(_imagesCursor);
+                    return false;
                 } catch (IOException e) {
                     e.printStackTrace();
                     saveImageState(_imagesCursor);
+                    return false;
                 }
             }while (_imagesCursor.moveToNext());
         }
 
-        return false;
+        return true;
     }
 
     private File rotateAndResizeImage(File image){
@@ -381,5 +397,6 @@ public class MainAsync extends AsyncTask<Void, Void, Void> {
 
     private void saveImageState(Cursor c){
         _imagesDataDb.setState(c.getLong(c.getColumnIndex(BaseColumns._ID)), ImagesDataDb.STATE_ERROR_SYNC);
+        ActivityHelper.debug("image error sending");
     }
 }
