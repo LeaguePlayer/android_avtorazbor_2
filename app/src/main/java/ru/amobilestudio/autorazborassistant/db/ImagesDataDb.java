@@ -61,22 +61,25 @@ public class ImagesDataDb extends DbSQLiteHelper {
 
         Cursor c = db.query(TABLE_NAME_IMAGES, new String[] { COLUMN_IMAGES_PATH },
                 BaseColumns._ID + "=?", new String[] { id + "" }, null, null, null, null);
+        try {
+            if (c.moveToFirst()) {
+                String image_uri = c.getString(c.getColumnIndex(COLUMN_IMAGES_PATH));
 
-        if(c.moveToFirst()){
-            String image_uri = c.getString(c.getColumnIndex(COLUMN_IMAGES_PATH));
+                try {
+                    URI uri = new URI(image_uri);
+                    File file = new File(uri);
 
-            try {
-                URI uri = new URI(image_uri);
-                File file = new File(uri);
+                    getContext().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            MediaStore.Images.ImageColumns.DATA + "='" + file.getPath() + "'", null);
 
-                getContext().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        MediaStore.Images.ImageColumns.DATA + "='" + file.getPath() + "'", null);
-
-                getContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
-                        Uri.parse("file://" + Environment.getExternalStorageDirectory())));
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
+                    getContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+                            Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
             }
+        } finally {
+            c.close();
         }
 
         db.delete(TABLE_NAME_IMAGES, BaseColumns._ID + "=?", new String[] { id+"" });
@@ -112,10 +115,12 @@ public class ImagesDataDb extends DbSQLiteHelper {
 
         Cursor c = db.query(TABLE_NAME_IMAGES, new String[] { BaseColumns._ID },
                 COLUMN_IMAGES_PART_ID + "=?", new String[] { part_id + "" }, null, null, null, null);
-
-        if (c.moveToFirst())
-            return c.getCount();
-
+        try {
+            if (c.moveToFirst())
+                return c.getCount();
+        } finally {
+            c.close();
+        }
         return 0;
     }
 
@@ -137,16 +142,18 @@ public class ImagesDataDb extends DbSQLiteHelper {
 
         Cursor c = db.query(TABLE_NAME_IMAGES, new String[] { BaseColumns._ID, COLUMN_IMAGES_PART_ID, COLUMN_IMAGES_PATH, COLUMN_IMAGES_STATE },
                 COLUMN_IMAGES_PART_ID + "=?", new String[] { part_id + "" }, null, null, null, null);
-
-        while(c.moveToNext()){
-            Image image = new Image(
-                    c.getLong(c.getColumnIndex(BaseColumns._ID)),
-                    c.getString(c.getColumnIndex(COLUMN_IMAGES_PATH)),
-                    c.getInt(c.getColumnIndex(COLUMN_IMAGES_STATE))
-            );
-            list.add(image);
+        try {
+            while (c.moveToNext()) {
+                Image image = new Image(
+                        c.getLong(c.getColumnIndex(BaseColumns._ID)),
+                        c.getString(c.getColumnIndex(COLUMN_IMAGES_PATH)),
+                        c.getInt(c.getColumnIndex(COLUMN_IMAGES_STATE))
+                );
+                list.add(image);
+            }
+        } finally {
+            c.close();
         }
-
         return list;
     }
 
@@ -175,3 +182,4 @@ public class ImagesDataDb extends DbSQLiteHelper {
         }
     }
 }
+
