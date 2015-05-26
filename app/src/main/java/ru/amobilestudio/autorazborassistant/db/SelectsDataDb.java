@@ -25,10 +25,12 @@ public class SelectsDataDb extends DbSQLiteHelper{
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor c = db.rawQuery("SELECT * FROM " + tableName, null);
-
-        if(c != null)
-            c.moveToFirst();
-
+        try {
+            if (c != null)
+                c.moveToFirst();
+        } finally {
+            c.close();
+        }
         return c;
     }
 
@@ -38,13 +40,15 @@ public class SelectsDataDb extends DbSQLiteHelper{
         Cursor c = db.rawQuery("SELECT * FROM " + tableName, null);
 
         ArrayList<Item> result = new ArrayList<Item>();
-
-        if(c.moveToFirst()){
-            do{
-                result.add(new Item(c.getInt(c.getColumnIndex(COLUMN_ID_VALUE)), c.getString(c.getColumnIndex(COLUMN_NAME_VALUE))));
-            }while(c.moveToNext());
+        try {
+            if (c.moveToFirst()) {
+                do {
+                    result.add(new Item(c.getInt(c.getColumnIndex(COLUMN_ID_VALUE)), c.getString(c.getColumnIndex(COLUMN_NAME_VALUE))));
+                } while (c.moveToNext());
+            }
+        }finally {
+            c.close();
         }
-
         return result;
     }
 
@@ -64,11 +68,14 @@ public class SelectsDataDb extends DbSQLiteHelper{
 
         Cursor c = db.query(tableName, new String[] {COLUMN_NAME_VALUE}, COLUMN_ID_VALUE + "=?",
                 new String[] { id }, null, null, null, null);
-
-        if(c.moveToFirst() && c.getCount() > 0) //exists
-            db.update(tableName, cv, COLUMN_ID_VALUE + "=?", new String[] { id });
-        else
-            db.insert(tableName, null, cv);
+        try {
+            if (c.moveToFirst() && c.getCount() > 0) //exists
+                db.update(tableName, cv, COLUMN_ID_VALUE + "=?", new String[]{id});
+            else
+                db.insert(tableName, null, cv);
+        } finally {
+            c.close();
+        }
     }
 
     public static final class Item{
