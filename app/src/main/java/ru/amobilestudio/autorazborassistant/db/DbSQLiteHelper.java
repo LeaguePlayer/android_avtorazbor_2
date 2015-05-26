@@ -144,12 +144,14 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
                 new String[]{id + ""}, null, null, null, null);
 
         String result = "";
+        try {
+            if (id == 0) return result;
 
-        if(id == 0) return result;
-
-        if(c.moveToFirst())
-            result = c.getString(c.getColumnIndex(COLUMN_NAME_VALUE));
-
+            if (c.moveToFirst())
+                result = c.getString(c.getColumnIndex(COLUMN_NAME_VALUE));
+        } finally {
+            c.close();
+        }
         return result;
     }
 
@@ -160,9 +162,12 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
                 new String[] { name }, null, null, null, null);
 
         int result = 0;
-        if(c.moveToFirst())
-            result = c.getInt(c.getColumnIndex(COLUMN_ID_VALUE));
-
+        try {
+            if (c.moveToFirst())
+                result = c.getInt(c.getColumnIndex(COLUMN_ID_VALUE));
+        } finally {
+            c.close();
+        }
         return result;
     }
 
@@ -190,3 +195,4 @@ public class DbSQLiteHelper extends SQLiteOpenHelper {
         return dbInfo.getBoolean("isDb", false);
     }
 }
+
